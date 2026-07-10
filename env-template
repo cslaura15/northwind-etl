@@ -16,3 +16,6 @@ POSTGRES_DST_PORT=5433
 # Specific paths/config used inside the DAG
 SQLITE_SRC_PATH=/opt/airflow/data/northwind.db
 POSTGRES_DEST_CONN=
+
+# API keys
+OPENWEATHER_API_KEY=
