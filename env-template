@@ -1,0 +1,22 @@
+# ── Airflow core ──────────────────────────────────────
+AIRFLOW_UID=50000
+AIRFLOW_PROJ_DIR=.
+_AIRFLOW_WWW_USER_USERNAME=
+_AIRFLOW_WWW_USER_PASSWORD=
+
+# Generate with: python3 -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
+FERNET_KEY=
+
+# ── Airflow metadata DB (the one baked into the official compose file) ──
+# usually already referenced as postgresql+psycopg2://airflow:airflow@postgres/airflow
+# only override here if you're changing the defaults
+
+# ── Your ETL target Postgres ─────────────────────────
+POSTGRES_DST_USER=
+POSTGRES_DST_PASSWORD=
+POSTGRES_DST_DB=
+POSTGRES_DST_PORT=5433
+
+# ── ETL-specific paths/config used inside the DAG ────
+SQLITE_SRC_PATH=/opt/airflow/data/northwind.db
+POSTGRES_DEST_CONN=
