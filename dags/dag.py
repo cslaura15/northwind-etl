@@ -11,6 +11,7 @@ DEST_DB_PATH = os.environ.get(
 )
 REGION_MAPPING_FILE_NAME = "region_mapping_DE.xlsx"
 SQLITE_TABLE_NAMES = ["customers", "orders"]
+REGION_MAPPING_TABLE_NAME = "region_mapping"
 DATA_DIR = "/opt/airflow/data"
 
 
@@ -23,7 +24,7 @@ def northwind_etl():
         region_mapping_df = pd.read_excel(region_mapping_path)
         engine = create_engine(DEST_DB_PATH)
         region_mapping_df.to_sql(
-            "region_mapping", engine, if_exists="replace", index=False
+            REGION_MAPPING_TABLE_NAME, engine, if_exists="replace", index=False
         )
 
     @task
@@ -39,12 +40,12 @@ def northwind_etl():
         conn.close()
 
         engine = create_engine(DEST_DB_PATH)
-        region_mapping_df = pd.read_sql("SELECT * FROM region_mapping", engine)
+        region_mapping_df = pd.read_sql(f"SELECT * FROM {REGION_MAPPING_TABLE_NAME}", engine)
         region_mapping_path = (
-            f"{DATA_DIR}/extract_region_mapping_{context['run_id']}.parquet"
+            f"{DATA_DIR}/extract_{REGION_MAPPING_TABLE_NAME}_{context['run_id']}.parquet"
         )
         region_mapping_df.to_parquet(region_mapping_path, index=False)
-        table_data_path_mapping["region_mapping"] = region_mapping_path
+        table_data_path_mapping[REGION_MAPPING_TABLE_NAME] = region_mapping_path
 
         return table_data_path_mapping
 
