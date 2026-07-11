@@ -64,37 +64,25 @@ def validate_df(df: pd.DataFrame, table_name: str, build_suite_func) -> gx.core.
         result = validation_definition.run(batch_parameters={"dataframe": df})
         return result
 
-def enrich_customers_with_weather(customers_df: pd.DataFrame, weather_data_df: pd.DataFrame) -> pd.DataFrame:
+
+def enrich_customers(customers_df: pd.DataFrame, weather_data_df: pd.DataFrame, region_mapping_df: pd.DataFrame) -> pd.DataFrame:
     """
-    Enrich the customers DataFrame with weather data based on the city.
+    Enrich the customers DataFrame with weather and region data.
 
     Args:
         customers_df (pd.DataFrame): The customers DataFrame.
         weather_data_df (pd.DataFrame): The weather data DataFrame.
+        region_mapping_df (pd.DataFrame): The region mapping DataFrame.
 
     Returns:
-        pd.DataFrame: The enriched customers DataFrame with weather information.
+        pd.DataFrame: The enriched customers DataFrame with weather and region information.
     """
     enriched_customers_df = customers_df.merge(
         weather_data_df,
         how="left",
         left_on="City",
         right_on="city"
-    )
-    return enriched_customers_df
-
-def enrich_customers_with_region(customers_df: pd.DataFrame, region_mapping_df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Enrich the customers DataFrame with region data based on the country.
-
-    Args:
-        customers_df (pd.DataFrame): The customers DataFrame.
-        region_mapping_df (pd.DataFrame): The region mapping DataFrame.
-
-    Returns:
-        pd.DataFrame: The enriched customers DataFrame with region information.
-    """
-    enriched_customers_df = customers_df.merge(
+    ).merge(
         region_mapping_df,
         how="left",
         left_on="Country",

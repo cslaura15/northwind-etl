@@ -1,12 +1,15 @@
-from airflow.decorators import dag, task
-from datetime import datetime
+import logging
+import os
 import sqlite3
 import pandas as pd
 from sqlalchemy import create_engine
-import os
+from airflow.decorators import dag, task
+from datetime import datetime
 
 from utils import fetch_all_weather_data
-from transform import run_first_validations
+from transform import enrich_customers, run_first_validations
+
+logger = logging.getLogger(__name__)
 
 SOURCE_DB_PATH = os.environ.get("SQLITE_SRC_PATH", "/opt/airflow/data/northwind.db")
 DEST_DB_PATH = os.environ.get(
@@ -28,12 +31,12 @@ def northwind_etl():
         # Load customers and orders data from SQLite
         conn = sqlite3.connect(SOURCE_DB_PATH)
         customers_df = pd.read_sql(f"SELECT * FROM {CUSTOMERS_TABLE_NAME}", conn)
-        path = f"{DATA_DIR}/extract_{CUSTOMERS_TABLE_NAME}_{context['run_id']}.parquet"
-        customers_df.to_parquet(path, index=False)
+        customers_path = f"{DATA_DIR}/extract_{CUSTOMERS_TABLE_NAME}_{context['run_id']}.parquet"
+        customers_df.to_parquet(customers_path, index=False)
 
         orders_df = pd.read_sql(f"SELECT * FROM {ORDERS_TABLE_NAME}", conn)
-        path = f"{DATA_DIR}/extract_{ORDERS_TABLE_NAME}_{context['run_id']}.parquet"
-        orders_df.to_parquet(path, index=False)
+        orders_path = f"{DATA_DIR}/extract_{ORDERS_TABLE_NAME}_{context['run_id']}.parquet"
+        orders_df.to_parquet(orders_path, index=False)
         conn.close()
 
         # Load region mapping data from Excel
@@ -51,15 +54,17 @@ def northwind_etl():
         )
         weather_data_df.to_parquet(weather_data_path, index=False)
 
-        return {"customers": path, "orders": path, "region_mapping": region_mapping_path, "weather_data": weather_data_path}
+        return {"customers": customers_path, "orders": orders_path, "region_mapping": region_mapping_path, "weather_data": weather_data_path}
 
     @task
     def transform(**context):
         data_paths = context["ti"].xcom_pull(task_ids="extract")
+        logger.info(f"Data paths from extract: {data_paths}")
         customers_df = pd.read_parquet(data_paths["customers"])
         orders_df = pd.read_parquet(data_paths["orders"])
         region_mapping_df = pd.read_parquet(data_paths["region_mapping"])
         run_first_validations(customers_df=customers_df, orders_df=orders_df, region_mapping_df=region_mapping_df)
+        enriched_customers_df = enrich_customers(customers_df, pd.read_parquet(data_paths["weather_data"]), region_mapping_df)
 
     @task
     def load(**context):
