@@ -1,7 +1,6 @@
 import great_expectations as gx
 
 
-
 def build_suite(schema: dict, key_columns: list, primary_key_columns: list) -> gx.ExpectationSuite:
     suite = gx.ExpectationSuite(name="first_customers_suite")
 
@@ -29,7 +28,13 @@ def build_suite(schema: dict, key_columns: list, primary_key_columns: list) -> g
         )
     
     # UNIQUENESS EXPECTATIONS
-    suite.add_expectation(
-        gx.expectations.ExpectCompoundColumnsToBeUnique(columns=primary_key_columns)
-    )
+    if len(primary_key_columns) == 1:
+        suite.add_expectation(
+            gx.expectations.ExpectColumnValuesToBeUnique(column=primary_key_columns[0])
+        )
+    else:
+        suite.add_expectation(
+            gx.expectations.ExpectCompoundColumnsToBeUnique(column_list=primary_key_columns)
+        )
 
+    return suite

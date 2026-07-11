@@ -1,9 +1,16 @@
+import json
 import os
 import requests
+from datetime import datetime, timezone
+from pathlib import Path
 
+import great_expectations as gx
 import pandas as pd
 
 OPENWEATHER_API_KEY = os.environ.get("OPENWEATHER_API_KEY")
+LOGS_DIR = Path("logs/validation")
+LOGS_DIR.mkdir(exist_ok=True)
+
 
 def fetch_weather_data(city: str) -> pd.DataFrame:
     """
@@ -50,3 +57,14 @@ def fetch_all_weather_data(cities: list) -> pd.DataFrame:
         except Exception as e:
             print(f"Error fetching data for {city}: {e}")
     return all_weather_data
+
+
+def save_result(result: gx.core.ExpectationSuiteValidationResult) -> None:
+    """
+    Write the full validation result as JSON to logs/validation/.
+    """
+    timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    json_path = LOGS_DIR / f"validation_{timestamp}.json"
+ 
+    with open(json_path, "w") as f:
+        json.dump(result.to_json_dict(), f, indent=2, default=str)

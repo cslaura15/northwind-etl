@@ -6,6 +6,7 @@ from sqlalchemy import create_engine
 import os
 
 from utils import fetch_all_weather_data
+from transform import run_first_validations
 
 SOURCE_DB_PATH = os.environ.get("SQLITE_SRC_PATH", "/opt/airflow/data/northwind.db")
 DEST_DB_PATH = os.environ.get(
@@ -55,6 +56,10 @@ def northwind_etl():
     @task
     def transform(**context):
         data_paths = context["ti"].xcom_pull(task_ids="extract")
+        customers_df = pd.read_parquet(data_paths["customers"])
+        orders_df = pd.read_parquet(data_paths["orders"])
+        region_mapping_df = pd.read_parquet(data_paths["region_mapping"])
+        run_first_validations(customers_df=customers_df, orders_df=orders_df, region_mapping_df=region_mapping_df)
 
     @task
     def load(**context):
