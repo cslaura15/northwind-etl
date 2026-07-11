@@ -55,19 +55,10 @@ def northwind_etl():
     @task
     def transform(**context):
         data_paths = context["ti"].xcom_pull(task_ids="extract")
-        customers_df = pd.read_parquet(data_paths["customers"])
-        orders_df = pd.read_parquet(data_paths["orders"])
-        
-        return {}
 
     @task
     def load(**context):
-        data_paths = context["ti"].xcom_pull(task_ids="transform")
-        customers_df = pd.read_parquet(data_paths["customers"])
-        orders_df = pd.read_parquet(data_paths["orders"])
-        engine = create_engine(DEST_DB_PATH)
-        customers_df.to_sql("customers", engine, if_exists="replace", index=False)
-        orders_df.to_sql("orders", engine, if_exists="replace", index=False)
+        pass
 
     extract() >> transform() >> load()
 
