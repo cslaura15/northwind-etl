@@ -1,5 +1,5 @@
 import great_expectations as gx
-from .base_suite import build_suite
+from .base_expectations import build_suite
 
 ORDERS_SCHEMA = {
     "OrderID": 'int64',

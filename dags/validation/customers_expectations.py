@@ -1,5 +1,5 @@
 import great_expectations as gx
-from .base_suite import build_suite
+from .base_expectations import build_suite
 
 
 CUSTOMERS_SCHEMA = {
@@ -22,4 +22,3 @@ PRIMARY_KEY_COLUMNS = ["CustomerID"]
 
 def build_first_customers_suite() -> gx.ExpectationSuite:
     return build_suite(CUSTOMERS_SCHEMA, KEY_COLUMNS, PRIMARY_KEY_COLUMNS)
-

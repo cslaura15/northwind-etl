@@ -1,4 +1,5 @@
 import great_expectations as gx
+import pandas as pd
 
 
 def build_suite(schema: dict, key_columns: list, primary_key_columns: list) -> gx.ExpectationSuite:

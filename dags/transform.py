@@ -3,9 +3,9 @@ import logging
 import great_expectations as gx
 import pandas as pd
 
-from expectations.customers_expectations import build_first_customers_suite
-from expectations.orders_expectations import build_first_orders_suite
-from expectations.region_mapping_expectations import build_first_region_mapping_suite
+from validation.customers_expectations import build_first_customers_suite
+from validation.orders_expectations import build_first_orders_suite
+from validation.region_mapping_expectations import build_first_region_mapping_suite
 from utils import save_result
 
 logger = logging.getLogger(__name__)
