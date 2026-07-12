@@ -23,4 +23,4 @@ PRIMARY_KEY_COLUMNS = ["OrderID"]
 
 
 def build_first_orders_suite() -> gx.ExpectationSuite:
-    return build_suite(ORDERS_SCHEMA, KEY_COLUMNS, PRIMARY_KEY_COLUMNS)
+    return build_suite(ORDERS_SCHEMA, KEY_COLUMNS, PRIMARY_KEY_COLUMNS, name="first_orders_suite")

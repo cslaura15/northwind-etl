@@ -7,7 +7,7 @@ from airflow.decorators import dag, task
 from datetime import datetime
 
 from utils import fetch_all_weather_data
-from transform import enrich_customers, run_first_validations
+from transform import enrich_customers, run_first_validations, run_second_validations
 
 logger = logging.getLogger(__name__)
 
@@ -59,12 +59,14 @@ def northwind_etl():
     @task
     def transform(**context):
         data_paths = context["ti"].xcom_pull(task_ids="extract")
-        logger.info(f"Data paths from extract: {data_paths}")
         customers_df = pd.read_parquet(data_paths["customers"])
         orders_df = pd.read_parquet(data_paths["orders"])
         region_mapping_df = pd.read_parquet(data_paths["region_mapping"])
         run_first_validations(customers_df=customers_df, orders_df=orders_df, region_mapping_df=region_mapping_df)
         enriched_customers_df = enrich_customers(customers_df, pd.read_parquet(data_paths["weather_data"]), region_mapping_df)
+        run_second_validations(enriched_customers_df=enriched_customers_df)
+        enrich_customers_path = f"{DATA_DIR}/enriched_customers_{context['run_id']}.parquet"
+        enriched_customers_df.to_parquet(enrich_customers_path, index=False)
 
     @task
     def load(**context):

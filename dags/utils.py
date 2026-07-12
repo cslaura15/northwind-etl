@@ -60,16 +60,15 @@ def fetch_all_weather_data(cities: list) -> pd.DataFrame:
             all_weather_data = pd.concat([all_weather_data, city_weather_data], ignore_index=True)
         except Exception as e:
             logger.error(f"Error fetching data for {city}: {e}")
-    logger.info(all_weather_data['city'].to_list())
     return all_weather_data
 
 
-def save_result(result: gx.core.ExpectationSuiteValidationResult) -> None:
+def save_result(result: gx.core.ExpectationSuiteValidationResult, log_file_name: str) -> None:
     """
     Write the full validation result as JSON to logs/validation/.
     """
     timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
-    json_path = LOGS_DIR / f"validation_{timestamp}.json"
+    json_path = LOGS_DIR / f"{log_file_name}_{timestamp}.json"
  
     with open(json_path, "w") as f:
         json.dump(result.to_json_dict(), f, indent=2, default=str)

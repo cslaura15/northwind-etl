@@ -2,8 +2,8 @@ import great_expectations as gx
 import pandas as pd
 
 
-def build_suite(schema: dict, key_columns: list, primary_key_columns: list) -> gx.ExpectationSuite:
-    suite = gx.ExpectationSuite(name="first_customers_suite")
+def build_suite(schema: dict, key_columns: list, primary_key_columns: list, name: str) -> gx.ExpectationSuite:
+    suite = gx.ExpectationSuite(name=name)
 
     # SCHEMA EXPECTATIONS
     suite.add_expectation(
