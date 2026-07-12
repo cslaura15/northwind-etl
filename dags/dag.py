@@ -6,11 +6,15 @@ from sqlalchemy import create_engine
 from airflow.decorators import dag, task
 from datetime import datetime
 
-from schemas.customers import RawCustomersSchema
-from schemas.orders import OrdersSchema
-from schemas.region_mapping import RegionMappingSchema
 from transform import enrich_customers, run_first_validations, run_second_validations
-from utils import fetch_all_weather_data, normalize_column_names
+from utils import (
+    get_customers_data,
+    get_orders_data,
+    get_region_mapping,
+    get_weather_data,
+    write_to_parquet,
+)
+from config import DATA_DIR
 
 logger = logging.getLogger(__name__)
 
@@ -18,12 +22,7 @@ SOURCE_DB_PATH = os.environ.get("SQLITE_SRC_PATH", "/opt/airflow/data/northwind.
 DEST_DB_PATH = os.environ.get(
     "POSTGRES_DEST_CONN", "postgresql://airflow:airflow@postgres-dest/airflow"
 )
-CUSTOMERS_TABLE_NAME = "customers"
-ORDERS_TABLE_NAME = "orders"
-REGION_MAPPING_FILE_NAME = "region_mapping_DE.xlsx"
-REGION_MAPPING_NAME = "region_mapping"
-WEATHER_DATA_NAME = "weather_data"
-DATA_DIR = "/opt/airflow/data"
+
 
 
 @dag(schedule=None, start_date=datetime(2024, 1, 1), catchup=False, tags=["etl"])
@@ -32,53 +31,25 @@ def northwind_etl():
     @task
     def extract(**context):
         # Load customers and orders data from SQLite
+        run_id = context["run_id"]
         conn = sqlite3.connect(SOURCE_DB_PATH)
-        customer_columns = ", ".join(
-            f'"{column_name}"' for column_name in RawCustomersSchema.model_fields.keys()
-        )
-        customers_df = pd.read_sql(
-            f"""
-            SELECT {customer_columns}
-            FROM {CUSTOMERS_TABLE_NAME}
-            """,
-            conn,
-        )
-        customers_path = (
-            f"{DATA_DIR}/extract_{CUSTOMERS_TABLE_NAME}_{context['run_id']}.parquet"
-        )
-        customers_df.to_parquet(customers_path, index=False)
-
-        order_columns = ", ".join(
-            f'"{column_name}"' for column_name in OrdersSchema.model_fields.keys()
-        )
-        orders_df = pd.read_sql(
-            f"""
-            SELECT {order_columns}
-            FROM {ORDERS_TABLE_NAME}
-            """,
-            conn,
-        )
-        orders_path = (
-            f"{DATA_DIR}/extract_{ORDERS_TABLE_NAME}_{context['run_id']}.parquet"
-        )
-        orders_df.to_parquet(orders_path, index=False)
+        
+        customers_df = get_customers_data(conn=conn)
+        customers_path = write_to_parquet(df=customers_df, table_name='customers', run_id=run_id)
+        
+        orders_df = get_orders_data(conn=conn)
+        orders_path = write_to_parquet(df=orders_df, table_name='orders', run_id=run_id)
+        
         conn.close()
 
         # Load region mapping data from Excel
-        region_mapping_df = pd.read_excel(f"{DATA_DIR}/{REGION_MAPPING_FILE_NAME}")
-        region_mapping_df = normalize_column_names(df=region_mapping_df)
-        region_mapping_path = (
-            f"{DATA_DIR}/extract_{REGION_MAPPING_NAME}_{context['run_id']}.parquet"
-        )
-        region_mapping_df.to_parquet(region_mapping_path, index=False)
+        region_mapping_df = get_region_mapping()
+        region_mapping_path = write_to_parquet(df=region_mapping_df, table_name='region_mapping', run_id=run_id)
 
         # Fetch weather data for specified cities
-        cities = customers_df["City"].unique().tolist()
-        weather_data_df = fetch_all_weather_data(cities)
-        weather_data_path = (
-            f"{DATA_DIR}/extract_{WEATHER_DATA_NAME}_{context['run_id']}.parquet"
-        )
-        weather_data_df.to_parquet(weather_data_path, index=False)
+        cities = customers_df['City'].unique().tolist()
+        weather_data_df = get_weather_data(cities=cities)
+        weather_data_path = write_to_parquet(df=weather_data_df, table_name='weather_data', run_id=run_id)
 
         return {
             "customers": customers_path,
@@ -109,10 +80,11 @@ def northwind_etl():
         # Run second validations on the enriched customers data
         run_second_validations(enriched_customers_df=enriched_customers_df)
 
-        enrich_customers_path = (
-            f"{DATA_DIR}/enriched_customers_{context['run_id']}.parquet"
+        enrich_customers_path = write_to_parquet(
+            df=enriched_customers_df, 
+            table_name='enriched_customers', 
+            run_id=context['run_id']
         )
-        enriched_customers_df.to_parquet(enrich_customers_path, index=False)
 
         return {
             "enriched_customers": enrich_customers_path,
