@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 import requests
 from datetime import datetime, timezone
@@ -6,6 +7,8 @@ from pathlib import Path
 
 import great_expectations as gx
 import pandas as pd
+
+logger = logging.getLogger(__name__)
 
 OPENWEATHER_API_KEY = os.environ.get("OPENWEATHER_API_KEY")
 LOGS_DIR = Path("logs/validation")
@@ -53,9 +56,11 @@ def fetch_all_weather_data(cities: list) -> pd.DataFrame:
     for city in cities:
         try:
             city_weather_data = fetch_weather_data(city)
+            city_weather_data['city'] = city  # Ensure the city name matches the requested city
             all_weather_data = pd.concat([all_weather_data, city_weather_data], ignore_index=True)
         except Exception as e:
-            print(f"Error fetching data for {city}: {e}")
+            logger.error(f"Error fetching data for {city}: {e}")
+    logger.info(all_weather_data['city'].to_list())
     return all_weather_data
 
 
