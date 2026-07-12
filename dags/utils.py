@@ -35,11 +35,13 @@ def fetch_weather_data(city: str) -> pd.DataFrame:
             "humidity": data["main"].get("humidity"),
             "weather_description": data["weather"][0].get("description"),
             "wind_speed": data["wind"].get("speed"),
-            "timestamp": pd.Timestamp.now()
+            "timestamp": pd.Timestamp.now(),
         }
         return pd.DataFrame([weather_data])
     else:
-        raise Exception(f"Failed to fetch weather data for {city}. Status code: {response.status_code}, Response: {response.text}")
+        raise Exception(
+            f"Failed to fetch weather data for {city}. Status code: {response.status_code}, Response: {response.text}"
+        )
 
 
 def fetch_all_weather_data(cities: list) -> pd.DataFrame:
@@ -47,7 +49,7 @@ def fetch_all_weather_data(cities: list) -> pd.DataFrame:
     Fetch weather data for a list of cities.
 
     Args:
-        cities (list): A list of city names to fetch weather data for. 
+        cities (list): A list of city names to fetch weather data for.
 
     Returns:
         pd.DataFrame: A DataFrame containing the weather data for all specified cities.
@@ -56,19 +58,25 @@ def fetch_all_weather_data(cities: list) -> pd.DataFrame:
     for city in cities:
         try:
             city_weather_data = fetch_weather_data(city)
-            city_weather_data['city'] = city  # Ensure the city name matches the requested city
-            all_weather_data = pd.concat([all_weather_data, city_weather_data], ignore_index=True)
+            city_weather_data["city"] = (
+                city  # Ensure the city name matches the requested city
+            )
+            all_weather_data = pd.concat(
+                [all_weather_data, city_weather_data], ignore_index=True
+            )
         except Exception as e:
             logger.error(f"Error fetching data for {city}: {e}")
     return all_weather_data
 
 
-def save_result(result: gx.core.ExpectationSuiteValidationResult, log_file_name: str) -> None:
+def save_result(
+    result: gx.core.ExpectationSuiteValidationResult, log_file_name: str
+) -> None:
     """
     Write the full validation result as JSON to logs/validation/.
     """
     timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     json_path = LOGS_DIR / f"{log_file_name}_{timestamp}.json"
- 
+
     with open(json_path, "w") as f:
         json.dump(result.to_json_dict(), f, indent=2, default=str)
