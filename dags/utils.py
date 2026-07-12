@@ -80,3 +80,20 @@ def save_result(
 
     with open(json_path, "w") as f:
         json.dump(result.to_json_dict(), f, indent=2, default=str)
+
+
+def normalize_column_names(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Normalize DataFrame column names by replacing spaces with underscores.
+
+    Args:
+        df (pd.DataFrame): The DataFrame whose column names should be normalized.
+
+    Returns:
+        pd.DataFrame: A new DataFrame with normalized column names.
+    """
+    new_columns = {
+        col: col.replace(" ", "_") if isinstance(col, str) else col
+        for col in df.columns
+    }
+    return df.rename(columns=new_columns)

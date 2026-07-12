@@ -1,23 +1,31 @@
 import great_expectations as gx
-import pandas as pd
+from datetime import datetime
 
+
+TYPE_MAPPING = {
+    str: "object",
+    int: "int64",
+    float: "float64",
+    bool: "bool",
+    datetime: "datetime64[ns]",
+}
 
 def build_suite(
-    schema: dict, key_columns: list, primary_key_columns: list, name: str
+    schema, key_columns: list, primary_key_columns: list, name: str
 ) -> gx.ExpectationSuite:
     suite = gx.ExpectationSuite(name=name)
 
     # SCHEMA EXPECTATIONS
     suite.add_expectation(
         gx.expectations.ExpectTableColumnsToMatchSet(
-            column_set=list(schema.keys()), exact_match=True
+            column_set=list(schema.model_fields.keys()), exact_match=True
         )
     )
 
     # DATA TYPE EXPECTATIONS
-    for column, dtype in schema.items():
+    for column, field_info in schema.model_fields.items():
         suite.add_expectation(
-            gx.expectations.ExpectColumnValuesToBeOfType(column=column, type_=dtype)
+            gx.expectations.ExpectColumnValuesToBeOfType(column=column, type_=TYPE_MAPPING[field_info.annotation])
         )
 
     # NULL VALUE EXPECTATIONS

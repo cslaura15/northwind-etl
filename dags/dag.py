@@ -6,8 +6,11 @@ from sqlalchemy import create_engine
 from airflow.decorators import dag, task
 from datetime import datetime
 
-from utils import fetch_all_weather_data
+from schemas.customers import RawCustomersSchema
+from schemas.orders import OrdersSchema
+from schemas.region_mapping import RegionMappingSchema
 from transform import enrich_customers, run_first_validations, run_second_validations
+from utils import fetch_all_weather_data, normalize_column_names
 
 logger = logging.getLogger(__name__)
 
@@ -30,13 +33,31 @@ def northwind_etl():
     def extract(**context):
         # Load customers and orders data from SQLite
         conn = sqlite3.connect(SOURCE_DB_PATH)
-        customers_df = pd.read_sql(f"SELECT * FROM {CUSTOMERS_TABLE_NAME}", conn)
+        customer_columns = ", ".join(
+            f'"{column_name}"' for column_name in RawCustomersSchema.model_fields.keys()
+        )
+        customers_df = pd.read_sql(
+            f"""
+            SELECT {customer_columns}
+            FROM {CUSTOMERS_TABLE_NAME}
+            """,
+            conn,
+        )
         customers_path = (
             f"{DATA_DIR}/extract_{CUSTOMERS_TABLE_NAME}_{context['run_id']}.parquet"
         )
         customers_df.to_parquet(customers_path, index=False)
 
-        orders_df = pd.read_sql(f"SELECT * FROM {ORDERS_TABLE_NAME}", conn)
+        order_columns = ", ".join(
+            f'"{column_name}"' for column_name in OrdersSchema.model_fields.keys()
+        )
+        orders_df = pd.read_sql(
+            f"""
+            SELECT {order_columns}
+            FROM {ORDERS_TABLE_NAME}
+            """,
+            conn,
+        )
         orders_path = (
             f"{DATA_DIR}/extract_{ORDERS_TABLE_NAME}_{context['run_id']}.parquet"
         )
@@ -45,6 +66,7 @@ def northwind_etl():
 
         # Load region mapping data from Excel
         region_mapping_df = pd.read_excel(f"{DATA_DIR}/{REGION_MAPPING_FILE_NAME}")
+        region_mapping_df = normalize_column_names(df=region_mapping_df)
         region_mapping_path = (
             f"{DATA_DIR}/extract_{REGION_MAPPING_NAME}_{context['run_id']}.parquet"
         )

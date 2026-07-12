@@ -3,3 +3,4 @@ requests
 sqlalchemy
 great_expectations
 openpyxl
+pydantic

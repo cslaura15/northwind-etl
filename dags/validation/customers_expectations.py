@@ -1,40 +1,8 @@
 import great_expectations as gx
 from .base_expectations import build_suite
 
-RAW_CUSTOMERS_SCHEMA = {
-    "CustomerID": "object",
-    "CompanyName": "object",
-    "ContactName": "object",
-    "ContactTitle": "object",
-    "Address": "object",
-    "City": "object",
-    "Region": "object",
-    "PostalCode": "object",
-    "Country": "object",
-    "Phone": "object",
-    "Fax": "object",
-}
+from schemas.customers import RawCustomersSchema, EnrichedCustomersSchema
 
-ENRICHED_CUSTOMERS_SCHEMA = {
-    "CustomerID": "object",
-    "CompanyName": "object",
-    "ContactName": "object",
-    "ContactTitle": "object",
-    "Address": "object",
-    "City": "object",
-    "Region": "object",
-    "PostalCode": "object",
-    "Country": "object",
-    "Phone": "object",
-    "Fax": "object",
-    "temperature": "float64",
-    "humidity": "float64",
-    "weather_description": "object",
-    "wind_speed": "float64",
-    "timestamp": "datetime64[ns]",
-    "Region starting 2016": "object",
-    "Region until 2017": "object",
-}
 
 KEY_COLUMNS = ["CustomerID", "City"]
 PRIMARY_KEY_COLUMNS = ["CustomerID"]
@@ -42,18 +10,18 @@ PRIMARY_KEY_COLUMNS = ["CustomerID"]
 
 def build_first_customers_suite() -> gx.ExpectationSuite:
     return build_suite(
-        RAW_CUSTOMERS_SCHEMA,
-        KEY_COLUMNS,
-        PRIMARY_KEY_COLUMNS,
+        schema=RawCustomersSchema,
+        key_columns=KEY_COLUMNS,
+        primary_key_columns=PRIMARY_KEY_COLUMNS,
         name="first_customers_suite",
     )
 
 
 def build_enriched_customers_suite() -> gx.ExpectationSuite:
     suite = build_suite(
-        ENRICHED_CUSTOMERS_SCHEMA,
-        KEY_COLUMNS,
-        PRIMARY_KEY_COLUMNS,
+        schema=EnrichedCustomersSchema,
+        key_columns=KEY_COLUMNS,
+        primary_key_columns=PRIMARY_KEY_COLUMNS,
         name="enriched_customers_suite",
     )
     # Additional expectations for enriched customers
