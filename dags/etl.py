@@ -6,14 +6,14 @@ from sqlalchemy import create_engine
 from airflow.decorators import dag, task
 from datetime import datetime
 
-from transform import enrich_customers, run_first_validations, run_second_validations
-from utils import (
+from extract import (
     get_customers_data,
     get_orders_data,
     get_region_mapping,
     get_weather_data,
-    write_to_parquet,
 )
+from transform import enrich_customers, run_first_validations, run_second_validations
+from utils import write_to_parquet
 from config import DATA_DIR, DEST_DB_PATH, SOURCE_DB_PATH
 
 logger = logging.getLogger(__name__)
