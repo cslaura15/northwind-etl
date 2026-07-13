@@ -3,6 +3,7 @@ import logging
 import requests
 from datetime import datetime, timezone
 from pathlib import Path
+from pydantic import BaseModel
 
 import great_expectations as gx
 import pandas as pd
@@ -18,6 +19,18 @@ logger = logging.getLogger(__name__)
 
 
 def write_to_parquet(df: pd.DataFrame, table_name: str, run_id: str, task: str) -> Path:
+    """Writes the given DataFrame to an intermediate parquet file stored in the data/ folder.
+    Uses the task and table name and the run id to create a unique file name. 
+
+    Args:
+        df (pd.DataFrame): the DataFrame that should be written to the parquet file
+        table_name (str): name of the table stored in the DataFrame
+        run_id (str): the unique run_id of the Airflow run
+        task (str): the name of the task that runs this function
+
+    Returns:
+        Path: _description_
+    """
     data_path = (
         f"{DATA_DIR}/{task}_{table_name}_{run_id}.parquet"
     )
@@ -57,8 +70,11 @@ def fetch_weather_data(city: str) -> pd.DataFrame:
 def save_result(
     result: gx.core.ExpectationSuiteValidationResult, log_file_name: str
 ) -> None:
-    """
-    Write the full validation result as JSON to logs/validation/.
+    """Write the full validation result as JSON to logs/validation/.
+
+    Args:
+        result (gx.core.ExpectationSuiteValidationResult): the validation result
+        log_file_name (str): file name (like extract_customers)
     """
     timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     json_path = LOGS_DIR / f"{log_file_name}_{timestamp}.json"
@@ -83,7 +99,15 @@ def normalize_column_names(df: pd.DataFrame) -> pd.DataFrame:
     }
     return df.rename(columns=new_columns)
 
-def get_primary_keys(schema):
+def get_primary_keys(schema: type[BaseModel]) -> list[str]:
+    """Gets all the primary keys from the given Pydantic schema model.
+
+    Args:
+        schema (type[BaseModel]): the Pydantic model
+
+    Returns:
+        list[str]: list of the names of the primary key columns
+    """
     return [
         name
         for name, field in schema.model_fields.items()

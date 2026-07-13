@@ -22,6 +22,14 @@ def run_first_validations(
     orders_df: pd.DataFrame = None,
     region_mapping_df: pd.DataFrame = None,
 ):
+    """Runs the validations on the DataFrames for the first time.
+    Builds the Great Expectation suites for all the tables, runs them and saves the result if the validation failed.
+
+    Args:
+        customers_df (pd.DataFrame, optional): the customers table in DataFrame
+        orders_df (pd.DataFrame, optional): the orders table in DataFrame
+        region_mapping_df (pd.DataFrame, optional): the region_mapping table in DataFrame
+    """
     table_function_mapping = {
         "customers": {"df": customers_df, "suite_func": build_first_customers_suite},
         "orders": {"df": orders_df, "suite_func": build_first_orders_suite},
@@ -47,6 +55,12 @@ def run_first_validations(
 
 
 def run_second_validations(enriched_customers_df: pd.DataFrame = None):
+    """Runs the second round of validations on the given DataFrames.
+    Builds the Great Expectation suites for all the tables, runs them and saves the result if the validation failed.
+
+    Args:
+        enriched_customers_df (pd.DataFrame, optional): the enriched customers table in DataFrame
+    """
     table_name = "enriched_customers"
     result = validate_df(
         enriched_customers_df, table_name, build_enriched_customers_suite
@@ -59,8 +73,18 @@ def run_second_validations(enriched_customers_df: pd.DataFrame = None):
 
 
 def validate_df(
-    df: pd.DataFrame, table_name: str, build_suite_func
+    df: pd.DataFrame, table_name: str, build_suite_func: function
 ) -> gx.core.ExpectationSuiteValidationResult:
+    """Validates one DataFrame based on the given build_suite_func.
+
+    Args:
+        df (pd.DataFrame): the given DataFrame
+        table_name (str): the table name used for Great Expectation namings
+        build_suite_func (function): the unique function that builds the validation suite for the table 
+
+    Returns:
+        gx.core.ExpectationSuiteValidationResult: the validation result
+    """
     context = gx.get_context(mode="ephemeral")
 
     data_source = context.data_sources.add_pandas("pandas_source")
@@ -111,6 +135,16 @@ def split_valid_quarantine(
     df: pd.DataFrame,
     schema: type[BaseModel],
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Splits the given DataFrame to valid and quarantined dfs based on the given Pydantic model.
+    If a row violates any of the constraints, it is moved to the quarantine df.
+
+    Args:
+        df (pd.DataFrame): the given DataFrame to run the splitting on
+        schema (type[BaseModel]): the table schema with constraints
+
+    Returns:
+        tuple[pd.DataFrame, pd.DataFrame]: the valid and quarantined DataFrames
+    """
 
     invalid_mask = pd.Series(False, index=df.index)
     reasons = pd.Series("", index=df.index, dtype="object")
@@ -156,8 +190,16 @@ def split_valid_quarantine(
     return valid_df, quarantine_df
 
 def clean_and_quarantine(df: pd.DataFrame, table_name: str, run_id: str):
-    """Split a dataframe into valid/quarantine rows and persist quarantine
-    (and optionally valid) to parquet."""
+    """Split a dataframe into valid/quarantine rows and persist quarantine to parquet.
+
+    Args:
+        df (pd.DataFrame): the DataFrame that should be cleaned
+        table_name (str): name of the table
+        run_id (str): the unique run id of the Airflow run (to generate unique file names)
+
+    Returns:
+        _type_: the path to the valid and quarantined parquet files
+    """
     valid_df, quarantine_df = split_valid_quarantine(
         df=df, schema=TABLE_SCHEMA_MAPPING[table_name]
     )

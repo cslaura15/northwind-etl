@@ -12,6 +12,17 @@ TYPE_MAPPING = {
 }
 
 def build_suite(schema: type[BaseModel], name: str) -> gx.ExpectationSuite:
+    """Builds a reusable Great Expectations validation suite.
+    Checks if all the columns are present and have the correct types.
+    Checks null values and uniqueness in the key columns.
+
+    Args:
+        schema (type[BaseModel]): the Pydantic model of the table schema with constraints
+        name (str): the name of the table
+
+    Returns:
+        gx.ExpectationSuite: a Great Expectations expectation suite
+    """
     suite = gx.ExpectationSuite(name=name)
 
     # SCHEMA EXPECTATIONS
