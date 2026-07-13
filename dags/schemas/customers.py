@@ -54,7 +54,6 @@ class RawCustomersSchema(BaseModel):
     Country: str = Field(
         json_schema_extra={
             "primary_key": False,
-            "foreign_key": "region_mapping.Country",
             "nullable": False
         }
     )

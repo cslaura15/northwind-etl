@@ -2,19 +2,29 @@ import logging
 import os
 import sqlite3
 import pandas as pd
-from sqlalchemy import create_engine
+from pathlib import Path
+from sqlalchemy import create_engine, MetaData, Table
+from sqlalchemy.dialects.postgresql import insert
 from airflow.decorators import dag, task
 from datetime import datetime
 
 from extract import (
-    get_customers_data,
-    get_orders_data,
+    get_sqlite_table,
     get_region_mapping,
     get_weather_data,
 )
-from transform import enrich_customers, run_first_validations, run_second_validations
-from utils import write_to_parquet
-from config import DATA_DIR, DEST_DB_PATH, SOURCE_DB_PATH
+from transform import enrich_customers, run_first_validations, run_second_validations, clean_and_quarantine
+from utils import write_to_parquet, get_primary_keys
+from config import (
+    DATA_DIR, 
+    DEST_DB_PATH, 
+    SOURCE_DB_PATH, 
+    REGION_MAPPING_TABLE_NAME, 
+    CUSTOMERS_TABLE_NAME,
+    ORDERS_TABLE_NAME,
+    WEATHER_DATA_NAME,
+    TABLE_SCHEMA_MAPPING
+)
 
 logger = logging.getLogger(__name__)
 
@@ -28,40 +38,42 @@ def northwind_etl():
         run_id = context["run_id"]
         conn = sqlite3.connect(SOURCE_DB_PATH)
         
-        customers_df = get_customers_data(conn=conn)
-        customers_path = write_to_parquet(df=customers_df, table_name='customers', run_id=run_id)
+        customers_df = get_sqlite_table(table_name=CUSTOMERS_TABLE_NAME, conn=conn)
+        customers_path = write_to_parquet(df=customers_df, table_name=CUSTOMERS_TABLE_NAME, run_id=run_id, task="extract")
         
-        orders_df = get_orders_data(conn=conn)
-        orders_path = write_to_parquet(df=orders_df, table_name='orders', run_id=run_id)
+        orders_df = get_sqlite_table(table_name=ORDERS_TABLE_NAME, conn=conn)
+        orders_path = write_to_parquet(df=orders_df, table_name=ORDERS_TABLE_NAME, run_id=run_id, task="extract")
         
         conn.close()
 
         # Load region mapping data from Excel
         region_mapping_df = get_region_mapping()
-        region_mapping_path = write_to_parquet(df=region_mapping_df, table_name='region_mapping', run_id=run_id)
+        region_mapping_path = write_to_parquet(df=region_mapping_df, table_name=REGION_MAPPING_TABLE_NAME, run_id=run_id, task="extract")
 
         # Fetch weather data for specified cities
         cities = customers_df['City'].unique().tolist()
         logger.info(f"cities: {cities}")
         weather_data_df = get_weather_data(cities=cities)
         logger.info(weather_data_df.head())
-        weather_data_path = write_to_parquet(df=weather_data_df, table_name='weather_data', run_id=run_id)
+        weather_data_path = write_to_parquet(df=weather_data_df, table_name=WEATHER_DATA_NAME, run_id=run_id, task="extract")
 
         return {
-            "customers": customers_path,
-            "orders": orders_path,
-            "region_mapping": region_mapping_path,
-            "weather_data": weather_data_path,
+            CUSTOMERS_TABLE_NAME: customers_path,
+            ORDERS_TABLE_NAME: orders_path,
+            REGION_MAPPING_TABLE_NAME: region_mapping_path,
+            WEATHER_DATA_NAME: weather_data_path,
         }
 
     @task
     def transform(**context):
         data_paths = context["ti"].xcom_pull(task_ids="extract")
+        run_id = context["run_id"]
 
         # Read the extracted data from parquet files
-        customers_df = pd.read_parquet(data_paths["customers"])
-        orders_df = pd.read_parquet(data_paths["orders"])
-        region_mapping_df = pd.read_parquet(data_paths["region_mapping"])
+        customers_df = pd.read_parquet(data_paths[CUSTOMERS_TABLE_NAME])
+        orders_df = pd.read_parquet(data_paths[ORDERS_TABLE_NAME])
+        logger.info(orders_df.columns)
+        region_mapping_df = pd.read_parquet(data_paths[REGION_MAPPING_TABLE_NAME])
 
         # Run first validations on the extracted data
         run_first_validations(
@@ -69,41 +81,63 @@ def northwind_etl():
             orders_df=orders_df,
             region_mapping_df=region_mapping_df,
         )
+
+        # Run cleaning: split each df into valid and quarantine
+        # (customers' valid rows aren't written yet - they still need enrichment)
+        valid_orders_path, quarantined_orders_path = clean_and_quarantine(
+            orders_df, ORDERS_TABLE_NAME, run_id
+        )
+        valid_region_mapping_path, quarantined_region_mapping_path = clean_and_quarantine(
+            region_mapping_df, REGION_MAPPING_TABLE_NAME, run_id
+        )
+
         # Run enrichment on customers data
         enriched_customers_df = enrich_customers(
-            customers_df, pd.read_parquet(data_paths["weather_data"]), region_mapping_df
+            customers_df=customers_df, 
+            weather_data_df=pd.read_parquet(data_paths[WEATHER_DATA_NAME]), 
+            region_mapping_df=region_mapping_df
         )
         # Run second validations on the enriched customers data
         run_second_validations(enriched_customers_df=enriched_customers_df)
-
-        enrich_customers_path = write_to_parquet(
-            df=enriched_customers_df, 
-            table_name='enriched_customers', 
-            run_id=context['run_id']
+        valid_enriched_customers_path, quarantined_enriched_customers_path = clean_and_quarantine(
+            enriched_customers_df, f"enriched_{CUSTOMERS_TABLE_NAME}", run_id
         )
 
         return {
-            "enriched_customers": enrich_customers_path,
-            "orders": data_paths["orders"],
-            "region_mapping": data_paths["region_mapping"],
+            CUSTOMERS_TABLE_NAME: valid_enriched_customers_path,
+            f"quarantined_{CUSTOMERS_TABLE_NAME}": quarantined_enriched_customers_path,
+            ORDERS_TABLE_NAME: valid_orders_path,
+            f"quarantined_{ORDERS_TABLE_NAME}": quarantined_orders_path,
+            REGION_MAPPING_TABLE_NAME: valid_region_mapping_path,
+            f"quarantined_{REGION_MAPPING_TABLE_NAME}": quarantined_region_mapping_path,
         }
 
     @task
     def load(**context):
         data_paths = context["ti"].xcom_pull(task_ids="transform")
-        enriched_customers_df = pd.read_parquet(data_paths["enriched_customers"])
-        orders_df = pd.read_parquet(data_paths["orders"])
-        region_mapping_df = pd.read_parquet(data_paths["region_mapping"])
 
-        # Load the enriched customers, orders, and region mapping data into PostgreSQL
+        def _load_table_to_db(path: Path, name: str, engine=sqlite3.Connection):
+            records = pd.read_parquet(path).to_dict(orient="records")
+            pk_columns = get_primary_keys(schema=TABLE_SCHEMA_MAPPING[name])
+            metadata = MetaData()
+            table = Table(name, metadata, autoload_with=engine)
+            stmt = insert(table).values(records)
+            stmt = stmt.on_conflict_do_nothing(index_elements=pk_columns)
+            with engine.begin() as conn:
+                conn.execute(stmt)
+
         engine = create_engine(DEST_DB_PATH)
-        enriched_customers_df.to_sql(
-            "enriched_customers", engine, if_exists="append", index=False
-        )
-        orders_df.to_sql("orders", engine, if_exists="append", index=False)
-        region_mapping_df.to_sql(
-            "region_mapping", engine, if_exists="append", index=False
-        )
+        _load_table_to_db(path=data_paths[REGION_MAPPING_TABLE_NAME], name=REGION_MAPPING_TABLE_NAME, engine=engine)
+        data_paths.pop(REGION_MAPPING_TABLE_NAME)
+        _load_table_to_db(path=data_paths[CUSTOMERS_TABLE_NAME], name=CUSTOMERS_TABLE_NAME, engine=engine)
+        data_paths.pop(CUSTOMERS_TABLE_NAME)
+        _load_table_to_db(path=data_paths[ORDERS_TABLE_NAME], name=ORDERS_TABLE_NAME, engine=engine)
+        data_paths.pop(ORDERS_TABLE_NAME)
+
+        for table_name, path in data_paths.items():
+            df = pd.read_parquet(path)
+            df.to_sql(name=table_name, con=engine, index=False)
+            
 
     @task(trigger_rule="all_done")
     def cleanup():
@@ -117,7 +151,7 @@ def northwind_etl():
             os.remove(parquet_file)
             logger.info("Removed temporary parquet file: %s", parquet_file)
 
-    extract() >> transform() >> load()# >> cleanup()
+    extract() >> transform() >> load() >> cleanup()
 
 
 northwind_etl()

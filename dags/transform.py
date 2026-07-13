@@ -1,15 +1,18 @@
 import logging
+from collections import defaultdict
 
 import great_expectations as gx
 import pandas as pd
+from pydantic import BaseModel
 
+from config import TABLE_SCHEMA_MAPPING
 from validation.customers_expectations import (
     build_first_customers_suite,
     build_enriched_customers_suite,
 )
 from validation.orders_expectations import build_first_orders_suite
 from validation.region_mapping_expectations import build_first_region_mapping_suite
-from utils import save_result
+from utils import save_result, write_to_parquet
 
 logger = logging.getLogger(__name__)
 
@@ -101,3 +104,68 @@ def enrich_customers(
         weather_data_df, how="left", on="City"
     ).merge(region_mapping_df, how="left", on="Country")
     return enriched_customers_df
+
+
+
+def split_valid_quarantine(
+    df: pd.DataFrame,
+    schema: type[BaseModel],
+) -> tuple[pd.DataFrame, pd.DataFrame]:
+
+    invalid_mask = pd.Series(False, index=df.index)
+    reasons = pd.Series("", index=df.index, dtype="object")
+
+    def add_reason(mask: pd.Series, reason: str):
+        nonlocal invalid_mask, reasons
+
+        invalid_mask |= mask
+        reasons.loc[mask] = reasons.loc[mask].apply(
+            lambda r: reason if r == "" else f"{r}; {reason}"
+        )
+
+    # Nullability checks
+    for column, field_info in schema.model_fields.items():
+        extra = field_info.json_schema_extra or {}
+
+        if not extra.get("nullable", True):
+            mask = df[column].isna()
+            add_reason(mask, f"{column} is NULL")
+
+    # Primary key duplicate checks
+    primary_keys = [
+        column
+        for column, field_info in schema.model_fields.items()
+        if (field_info.json_schema_extra or {}).get("primary_key")
+    ]
+
+    if primary_keys:
+        duplicate_mask = df.duplicated(
+            subset=primary_keys,
+            keep=False,
+        )
+        add_reason(
+            duplicate_mask,
+            f"Duplicate primary key ({', '.join(primary_keys)})"
+        )
+
+    quarantine_df = df[invalid_mask].copy()
+    quarantine_df["quarantine_reason"] = reasons[invalid_mask]
+
+    valid_df = df[~invalid_mask].copy()
+
+    return valid_df, quarantine_df
+
+def clean_and_quarantine(df: pd.DataFrame, table_name: str, run_id: str):
+    """Split a dataframe into valid/quarantine rows and persist quarantine
+    (and optionally valid) to parquet."""
+    valid_df, quarantine_df = split_valid_quarantine(
+        df=df, schema=TABLE_SCHEMA_MAPPING[table_name]
+    )
+    quarantine_path = write_to_parquet(
+        df=quarantine_df, table_name=f"quarantined_{table_name}", run_id=run_id, task="transform"
+    )
+
+    valid_path = write_to_parquet(
+        df=valid_df, table_name=f"valid_{table_name}", run_id=run_id, task="transform"
+    )
+    return valid_path, quarantine_path

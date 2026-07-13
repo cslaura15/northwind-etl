@@ -17,9 +17,9 @@ from config import (
 logger = logging.getLogger(__name__)
 
 
-def write_to_parquet(df: pd.DataFrame, table_name: str, run_id: str) -> Path:
+def write_to_parquet(df: pd.DataFrame, table_name: str, run_id: str, task: str) -> Path:
     data_path = (
-        f"{DATA_DIR}/extract_{table_name}_{run_id}.parquet"
+        f"{DATA_DIR}/{task}_{table_name}_{run_id}.parquet"
     )
     df.to_parquet(data_path, index=False)
     return data_path
@@ -82,3 +82,10 @@ def normalize_column_names(df: pd.DataFrame) -> pd.DataFrame:
         for col in df.columns
     }
     return df.rename(columns=new_columns)
+
+def get_primary_keys(schema):
+    return [
+        name
+        for name, field in schema.model_fields.items()
+        if field.json_schema_extra.get("primary_key", False)
+    ]

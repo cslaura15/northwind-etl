@@ -3,44 +3,28 @@ import sqlite3
 import pandas as pd
 from pathlib import Path
 
-from schemas.customers import RawCustomersSchema
-from schemas.orders import OrdersSchema
-
 from config import (
     DATA_DIR,
-    CUSTOMERS_TABLE_NAME,
-    ORDERS_TABLE_NAME,
-    REGION_MAPPING_FILE_NAME
+    REGION_MAPPING_FILE_NAME,
+    TABLE_SCHEMA_MAPPING,
 )
 from utils import normalize_column_names, fetch_weather_data
 
 logger = logging.getLogger(__name__)
 
-def get_customers_data(conn: sqlite3.Connection) -> pd.DataFrame:
-    customer_columns = ", ".join(
-        f'"{column_name}"' for column_name in RawCustomersSchema.model_fields.keys()
+def get_sqlite_table(table_name: str, conn: sqlite3.Connection) -> pd.DataFrame:
+    schema = TABLE_SCHEMA_MAPPING[table_name]
+    columns = ", ".join(
+        f'"{column_name}"' for column_name in schema.model_fields.keys()
     )
-    customers_df = pd.read_sql(
+    df = pd.read_sql(
         f"""
-        SELECT {customer_columns}
-        FROM {CUSTOMERS_TABLE_NAME}
+        SELECT {columns}
+        FROM {table_name.title()}
         """,
         conn,
     )
-    return customers_df
-
-def get_orders_data(conn: sqlite3.Connection) -> pd.DataFrame:
-    order_columns = ", ".join(
-        f'"{column_name}"' for column_name in OrdersSchema.model_fields.keys()
-    )
-    orders_df = pd.read_sql(
-        f"""
-        SELECT {order_columns}
-        FROM {ORDERS_TABLE_NAME}
-        """,
-        conn,
-    )
-    return orders_df
+    return df
 
 def get_region_mapping() -> pd.DataFrame:
     region_mapping_df = pd.read_excel(f"{DATA_DIR}/{REGION_MAPPING_FILE_NAME}")

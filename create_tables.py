@@ -9,7 +9,6 @@ from sqlalchemy import (
     Integer,
     Float,
     Boolean,
-    ForeignKey,
 )
 
 from dags.schemas.customers import EnrichedCustomersSchema
@@ -52,11 +51,6 @@ def create_table_from_pydantic(
         if extra.get("primary_key", False):
             column_kwargs["primary_key"] = True
 
-        if extra.get("foreign_key"):
-            column_args.append(
-                ForeignKey(extra["foreign_key"])
-            )
-
         columns.append(
             Column(
                 field_name,
@@ -80,7 +74,7 @@ if __name__ == "__main__":
     schemas = {
         "customers": EnrichedCustomersSchema,
         "orders": OrdersSchema,
-        "region_mapping": RegionMappingSchema
+        "region_mapping": RegionMappingSchema,
     }
     for table_name, schema in schemas.items():
         create_table_from_pydantic(

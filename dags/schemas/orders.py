@@ -11,7 +11,6 @@ class OrdersSchema(BaseModel):
     CustomerID: str = Field(
         json_schema_extra={
             "primary_key": False,
-            "foreign_key": "customers.CustomerID",
             "nullable": False
         }
     )
