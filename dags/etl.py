@@ -7,6 +7,7 @@ from pathlib import Path
 import pandas as pd
 from airflow.decorators import dag, task
 from extract import get_region_mapping, get_sqlite_table, get_weather_data
+from logging_config import setup_logging
 from sqlalchemy import MetaData, Table, create_engine
 from sqlalchemy.dialects.postgresql import insert
 from transform import (clean_and_quarantine, enrich_customers,
@@ -17,6 +18,7 @@ from config import (CUSTOMERS_TABLE_NAME, DATA_DIR, DEST_DB_PATH,
                     ORDERS_TABLE_NAME, REGION_MAPPING_TABLE_NAME,
                     SOURCE_DB_PATH, TABLE_SCHEMA_MAPPING, WEATHER_DATA_NAME)
 
+setup_logging()
 logger = logging.getLogger(__name__)
 
 
@@ -55,9 +57,7 @@ def northwind_etl():
 
         # Fetch weather data for specified cities
         cities = customers_df["City"].unique().tolist()
-        logger.info(f"cities: {cities}")
         weather_data_df = get_weather_data(cities=cities)
-        logger.info(weather_data_df.head())
         weather_data_path = write_to_parquet(
             df=weather_data_df,
             table_name=WEATHER_DATA_NAME,
@@ -80,7 +80,6 @@ def northwind_etl():
         # Read the extracted data from parquet files
         customers_df = pd.read_parquet(data_paths[CUSTOMERS_TABLE_NAME])
         orders_df = pd.read_parquet(data_paths[ORDERS_TABLE_NAME])
-        logger.info(orders_df.columns)
         region_mapping_df = pd.read_parquet(data_paths[REGION_MAPPING_TABLE_NAME])
 
         # Run first validations on the extracted data
@@ -127,6 +126,7 @@ def northwind_etl():
         data_paths = context["ti"].xcom_pull(task_ids="transform")
 
         def _load_table_to_db(path: Path, name: str, engine=sqlite3.Connection):
+            logger.info(f"Loading table {name} ...")
             records = pd.read_parquet(path).to_dict(orient="records")
             pk_columns = get_primary_keys(schema=TABLE_SCHEMA_MAPPING[name])
             metadata = MetaData()
@@ -135,6 +135,7 @@ def northwind_etl():
             stmt = stmt.on_conflict_do_nothing(index_elements=pk_columns)
             with engine.begin() as conn:
                 conn.execute(stmt)
+            logger.info("Loading successful")
 
         engine = create_engine(DEST_DB_PATH)
         _load_table_to_db(
@@ -155,8 +156,10 @@ def northwind_etl():
         data_paths.pop(ORDERS_TABLE_NAME)
 
         for table_name, path in data_paths.items():
+            logger.info(f"Loading table {table_name} ...")
             df = pd.read_parquet(path)
             df.to_sql(name=table_name, con=engine, index=False)
+            logger.info("Loading successful")
 
     @task(trigger_rule="all_done")
     def cleanup():
@@ -168,7 +171,8 @@ def northwind_etl():
 
         for parquet_file in parquet_files:
             os.remove(parquet_file)
-            logger.info("Removed temporary parquet file: %s", parquet_file)
+        
+        logger.info("Successfully removed temporary parquet files")
 
     extract() >> transform() >> load() >> cleanup()
 

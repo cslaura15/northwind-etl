@@ -1,5 +1,5 @@
 import logging
-from collections import defaultdict
+from types import FunctionType
 
 import great_expectations as gx
 import pandas as pd
@@ -38,9 +38,9 @@ def run_first_validations(
         },
     }
     for table_name, info in table_function_mapping.items():
+        logger.info(f"Running first validation on {table_name} ...")
         df = info["df"]
         build_suite_func = info["suite_func"]
-        logger.info(f"Validating table {table_name} with func {build_suite_func}")
         if build_suite_func:
             result = validate_df(df, table_name, build_suite_func)
 
@@ -61,6 +61,7 @@ def run_second_validations(enriched_customers_df: pd.DataFrame = None):
         enriched_customers_df (pd.DataFrame, optional): the enriched customers table in DataFrame
     """
     table_name = "enriched_customers"
+    logger.info(f"Running second validation on {table_name} ...")
     result = validate_df(
         enriched_customers_df, table_name, build_enriched_customers_suite
     )
@@ -72,14 +73,14 @@ def run_second_validations(enriched_customers_df: pd.DataFrame = None):
 
 
 def validate_df(
-    df: pd.DataFrame, table_name: str, build_suite_func: function
+    df: pd.DataFrame, table_name: str, build_suite_func: FunctionType
 ) -> gx.core.ExpectationSuiteValidationResult:
     """Validates one DataFrame based on the given build_suite_func.
 
     Args:
         df (pd.DataFrame): the given DataFrame
         table_name (str): the table name used for Great Expectation namings
-        build_suite_func (function): the unique function that builds the validation suite for the table
+        build_suite_func (FunctionType): the unique function that builds the validation suite for the table
 
     Returns:
         gx.core.ExpectationSuiteValidationResult: the validation result
@@ -122,10 +123,12 @@ def enrich_customers(
     Returns:
         pd.DataFrame: The enriched customers DataFrame with weather and region information.
     """
+    logger.info(f"Running customers enrichment ...")
     weather_data_df = weather_data_df.rename(columns={"city": "City"})
     enriched_customers_df = customers_df.merge(
         weather_data_df, how="left", on="City"
     ).merge(region_mapping_df, how="left", on="Country")
+    logger.info(f"Number of rows before and after enrichment: {len(customers_df)} and {len(enriched_customers_df)}")
     return enriched_customers_df
 
 
@@ -196,6 +199,7 @@ def clean_and_quarantine(df: pd.DataFrame, table_name: str, run_id: str):
     Returns:
         _type_: the path to the valid and quarantined parquet files
     """
+    logger.info(f"Running cleaning on {table_name} ...")
     valid_df, quarantine_df = split_valid_quarantine(
         df=df, schema=TABLE_SCHEMA_MAPPING[table_name]
     )
@@ -209,4 +213,5 @@ def clean_and_quarantine(df: pd.DataFrame, table_name: str, run_id: str):
     valid_path = write_to_parquet(
         df=valid_df, table_name=f"valid_{table_name}", run_id=run_id, task="transform"
     )
+    logger.info(f"Number of valid rows: {len(valid_df)} and invalid rows: {len(quarantine_df)}")
     return valid_path, quarantine_path
