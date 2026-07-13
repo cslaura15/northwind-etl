@@ -2,7 +2,6 @@ import great_expectations as gx
 from datetime import datetime
 from pydantic import BaseModel
 
-
 TYPE_MAPPING = {
     str: "object",
     int: "int64",
@@ -10,6 +9,7 @@ TYPE_MAPPING = {
     bool: "bool",
     datetime: "datetime64[ns]",
 }
+
 
 def build_suite(schema: type[BaseModel], name: str) -> gx.ExpectationSuite:
     """Builds a reusable Great Expectations validation suite.
@@ -39,7 +39,9 @@ def build_suite(schema: type[BaseModel], name: str) -> gx.ExpectationSuite:
         extra = field_info.json_schema_extra or {}
 
         suite.add_expectation(
-            gx.expectations.ExpectColumnValuesToBeOfType(column=column, type_=TYPE_MAPPING[field_info.annotation])
+            gx.expectations.ExpectColumnValuesToBeOfType(
+                column=column, type_=TYPE_MAPPING[field_info.annotation]
+            )
         )
 
         # NULL VALUE EXPECTATIONS

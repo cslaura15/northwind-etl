@@ -22,6 +22,7 @@ PYDANTIC_TO_SQLALCHEMY = {
     bool: Boolean,
 }
 
+
 def create_table_from_pydantic(
     model: type[BaseModel],
     table_name: str,
@@ -36,10 +37,7 @@ def create_table_from_pydantic(
     for field_name, field_info in model.model_fields.items():
         annotation = field_info.annotation
 
-        sqlalchemy_type = PYDANTIC_TO_SQLALCHEMY.get(
-            annotation,
-            String
-        )
+        sqlalchemy_type = PYDANTIC_TO_SQLALCHEMY.get(annotation, String)
 
         extra = field_info.json_schema_extra or {}
         column_args = []
@@ -52,12 +50,7 @@ def create_table_from_pydantic(
             column_kwargs["primary_key"] = True
 
         columns.append(
-            Column(
-                field_name,
-                sqlalchemy_type,
-                *column_args,
-                **column_kwargs
-            )
+            Column(field_name, sqlalchemy_type, *column_args, **column_kwargs)
         )
 
     return Table(
@@ -66,9 +59,10 @@ def create_table_from_pydantic(
         *columns,
     )
 
+
 if __name__ == "__main__":
     engine = create_engine(os.environ.get("DATABASE_URL"))
-    
+
     metadata = MetaData()
 
     schemas = {
@@ -82,6 +76,6 @@ if __name__ == "__main__":
             table_name=table_name,
             metadata=metadata,
         )
-    
+
     metadata.create_all(engine)
     print("Database tables created")

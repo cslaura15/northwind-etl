@@ -19,7 +19,7 @@ WEATHER_DATA_NAME = "weather_data"
 
 TABLE_SCHEMA_MAPPING = {
     CUSTOMERS_TABLE_NAME: RawCustomersSchema,
-    F"enriched_{CUSTOMERS_TABLE_NAME}": EnrichedCustomersSchema,
+    f"enriched_{CUSTOMERS_TABLE_NAME}": EnrichedCustomersSchema,
     ORDERS_TABLE_NAME: OrdersSchema,
-    REGION_MAPPING_TABLE_NAME: RegionMappingSchema
+    REGION_MAPPING_TABLE_NAME: RegionMappingSchema,
 }

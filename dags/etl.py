@@ -13,17 +13,22 @@ from extract import (
     get_region_mapping,
     get_weather_data,
 )
-from transform import enrich_customers, run_first_validations, run_second_validations, clean_and_quarantine
+from transform import (
+    enrich_customers,
+    run_first_validations,
+    run_second_validations,
+    clean_and_quarantine,
+)
 from utils import write_to_parquet, get_primary_keys
 from config import (
-    DATA_DIR, 
-    DEST_DB_PATH, 
-    SOURCE_DB_PATH, 
-    REGION_MAPPING_TABLE_NAME, 
+    DATA_DIR,
+    DEST_DB_PATH,
+    SOURCE_DB_PATH,
+    REGION_MAPPING_TABLE_NAME,
     CUSTOMERS_TABLE_NAME,
     ORDERS_TABLE_NAME,
     WEATHER_DATA_NAME,
-    TABLE_SCHEMA_MAPPING
+    TABLE_SCHEMA_MAPPING,
 )
 
 logger = logging.getLogger(__name__)
@@ -37,25 +42,42 @@ def northwind_etl():
         # Load customers and orders data from SQLite
         run_id = context["run_id"]
         conn = sqlite3.connect(SOURCE_DB_PATH)
-        
+
         customers_df = get_sqlite_table(table_name=CUSTOMERS_TABLE_NAME, conn=conn)
-        customers_path = write_to_parquet(df=customers_df, table_name=CUSTOMERS_TABLE_NAME, run_id=run_id, task="extract")
-        
+        customers_path = write_to_parquet(
+            df=customers_df,
+            table_name=CUSTOMERS_TABLE_NAME,
+            run_id=run_id,
+            task="extract",
+        )
+
         orders_df = get_sqlite_table(table_name=ORDERS_TABLE_NAME, conn=conn)
-        orders_path = write_to_parquet(df=orders_df, table_name=ORDERS_TABLE_NAME, run_id=run_id, task="extract")
-        
+        orders_path = write_to_parquet(
+            df=orders_df, table_name=ORDERS_TABLE_NAME, run_id=run_id, task="extract"
+        )
+
         conn.close()
 
         # Load region mapping data from Excel
         region_mapping_df = get_region_mapping()
-        region_mapping_path = write_to_parquet(df=region_mapping_df, table_name=REGION_MAPPING_TABLE_NAME, run_id=run_id, task="extract")
+        region_mapping_path = write_to_parquet(
+            df=region_mapping_df,
+            table_name=REGION_MAPPING_TABLE_NAME,
+            run_id=run_id,
+            task="extract",
+        )
 
         # Fetch weather data for specified cities
-        cities = customers_df['City'].unique().tolist()
+        cities = customers_df["City"].unique().tolist()
         logger.info(f"cities: {cities}")
         weather_data_df = get_weather_data(cities=cities)
         logger.info(weather_data_df.head())
-        weather_data_path = write_to_parquet(df=weather_data_df, table_name=WEATHER_DATA_NAME, run_id=run_id, task="extract")
+        weather_data_path = write_to_parquet(
+            df=weather_data_df,
+            table_name=WEATHER_DATA_NAME,
+            run_id=run_id,
+            task="extract",
+        )
 
         return {
             CUSTOMERS_TABLE_NAME: customers_path,
@@ -87,20 +109,22 @@ def northwind_etl():
         valid_orders_path, quarantined_orders_path = clean_and_quarantine(
             orders_df, ORDERS_TABLE_NAME, run_id
         )
-        valid_region_mapping_path, quarantined_region_mapping_path = clean_and_quarantine(
-            region_mapping_df, REGION_MAPPING_TABLE_NAME, run_id
+        valid_region_mapping_path, quarantined_region_mapping_path = (
+            clean_and_quarantine(region_mapping_df, REGION_MAPPING_TABLE_NAME, run_id)
         )
 
         # Run enrichment on customers data
         enriched_customers_df = enrich_customers(
-            customers_df=customers_df, 
-            weather_data_df=pd.read_parquet(data_paths[WEATHER_DATA_NAME]), 
-            region_mapping_df=region_mapping_df
+            customers_df=customers_df,
+            weather_data_df=pd.read_parquet(data_paths[WEATHER_DATA_NAME]),
+            region_mapping_df=region_mapping_df,
         )
         # Run second validations on the enriched customers data
         run_second_validations(enriched_customers_df=enriched_customers_df)
-        valid_enriched_customers_path, quarantined_enriched_customers_path = clean_and_quarantine(
-            enriched_customers_df, f"enriched_{CUSTOMERS_TABLE_NAME}", run_id
+        valid_enriched_customers_path, quarantined_enriched_customers_path = (
+            clean_and_quarantine(
+                enriched_customers_df, f"enriched_{CUSTOMERS_TABLE_NAME}", run_id
+            )
         )
 
         return {
@@ -127,17 +151,26 @@ def northwind_etl():
                 conn.execute(stmt)
 
         engine = create_engine(DEST_DB_PATH)
-        _load_table_to_db(path=data_paths[REGION_MAPPING_TABLE_NAME], name=REGION_MAPPING_TABLE_NAME, engine=engine)
+        _load_table_to_db(
+            path=data_paths[REGION_MAPPING_TABLE_NAME],
+            name=REGION_MAPPING_TABLE_NAME,
+            engine=engine,
+        )
         data_paths.pop(REGION_MAPPING_TABLE_NAME)
-        _load_table_to_db(path=data_paths[CUSTOMERS_TABLE_NAME], name=CUSTOMERS_TABLE_NAME, engine=engine)
+        _load_table_to_db(
+            path=data_paths[CUSTOMERS_TABLE_NAME],
+            name=CUSTOMERS_TABLE_NAME,
+            engine=engine,
+        )
         data_paths.pop(CUSTOMERS_TABLE_NAME)
-        _load_table_to_db(path=data_paths[ORDERS_TABLE_NAME], name=ORDERS_TABLE_NAME, engine=engine)
+        _load_table_to_db(
+            path=data_paths[ORDERS_TABLE_NAME], name=ORDERS_TABLE_NAME, engine=engine
+        )
         data_paths.pop(ORDERS_TABLE_NAME)
 
         for table_name, path in data_paths.items():
             df = pd.read_parquet(path)
             df.to_sql(name=table_name, con=engine, index=False)
-            
 
     @task(trigger_rule="all_done")
     def cleanup():

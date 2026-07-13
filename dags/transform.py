@@ -80,7 +80,7 @@ def validate_df(
     Args:
         df (pd.DataFrame): the given DataFrame
         table_name (str): the table name used for Great Expectation namings
-        build_suite_func (function): the unique function that builds the validation suite for the table 
+        build_suite_func (function): the unique function that builds the validation suite for the table
 
     Returns:
         gx.core.ExpectationSuiteValidationResult: the validation result
@@ -130,7 +130,6 @@ def enrich_customers(
     return enriched_customers_df
 
 
-
 def split_valid_quarantine(
     df: pd.DataFrame,
     schema: type[BaseModel],
@@ -177,10 +176,7 @@ def split_valid_quarantine(
             subset=primary_keys,
             keep=False,
         )
-        add_reason(
-            duplicate_mask,
-            f"Duplicate primary key ({', '.join(primary_keys)})"
-        )
+        add_reason(duplicate_mask, f"Duplicate primary key ({', '.join(primary_keys)})")
 
     quarantine_df = df[invalid_mask].copy()
     quarantine_df["quarantine_reason"] = reasons[invalid_mask]
@@ -188,6 +184,7 @@ def split_valid_quarantine(
     valid_df = df[~invalid_mask].copy()
 
     return valid_df, quarantine_df
+
 
 def clean_and_quarantine(df: pd.DataFrame, table_name: str, run_id: str):
     """Split a dataframe into valid/quarantine rows and persist quarantine to parquet.
@@ -204,7 +201,10 @@ def clean_and_quarantine(df: pd.DataFrame, table_name: str, run_id: str):
         df=df, schema=TABLE_SCHEMA_MAPPING[table_name]
     )
     quarantine_path = write_to_parquet(
-        df=quarantine_df, table_name=f"quarantined_{table_name}", run_id=run_id, task="transform"
+        df=quarantine_df,
+        table_name=f"quarantined_{table_name}",
+        run_id=run_id,
+        task="transform",
     )
 
     valid_path = write_to_parquet(

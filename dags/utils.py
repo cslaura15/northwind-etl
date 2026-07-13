@@ -14,13 +14,12 @@ from config import (
     OPENWEATHER_API_KEY,
 )
 
-
 logger = logging.getLogger(__name__)
 
 
 def write_to_parquet(df: pd.DataFrame, table_name: str, run_id: str, task: str) -> Path:
     """Writes the given DataFrame to an intermediate parquet file stored in the data/ folder.
-    Uses the task and table name and the run id to create a unique file name. 
+    Uses the task and table name and the run id to create a unique file name.
 
     Args:
         df (pd.DataFrame): the DataFrame that should be written to the parquet file
@@ -31,9 +30,7 @@ def write_to_parquet(df: pd.DataFrame, table_name: str, run_id: str, task: str) 
     Returns:
         Path: _description_
     """
-    data_path = (
-        f"{DATA_DIR}/{task}_{table_name}_{run_id}.parquet"
-    )
+    data_path = f"{DATA_DIR}/{task}_{table_name}_{run_id}.parquet"
     df.to_parquet(data_path, index=False)
     return data_path
 
@@ -98,6 +95,7 @@ def normalize_column_names(df: pd.DataFrame) -> pd.DataFrame:
         for col in df.columns
     }
     return df.rename(columns=new_columns)
+
 
 def get_primary_keys(schema: type[BaseModel]) -> list[str]:
     """Gets all the primary keys from the given Pydantic schema model.
