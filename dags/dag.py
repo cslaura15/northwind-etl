@@ -14,15 +14,9 @@ from utils import (
     get_weather_data,
     write_to_parquet,
 )
-from config import DATA_DIR
+from config import DATA_DIR, SOURCE_DB_PATH
 
 logger = logging.getLogger(__name__)
-
-SOURCE_DB_PATH = os.environ.get("SQLITE_SRC_PATH", "/opt/airflow/data/northwind.db")
-DEST_DB_PATH = os.environ.get(
-    "POSTGRES_DEST_CONN", "postgresql://airflow:airflow@postgres-dest/airflow"
-)
-
 
 
 @dag(schedule=None, start_date=datetime(2024, 1, 1), catchup=False, tags=["etl"])

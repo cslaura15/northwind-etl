@@ -1,5 +1,6 @@
 import great_expectations as gx
 from datetime import datetime
+from pydantic import BaseModel
 
 
 TYPE_MAPPING = {
@@ -10,7 +11,7 @@ TYPE_MAPPING = {
     datetime: "datetime64[ns]",
 }
 
-def build_suite(schema, name: str) -> gx.ExpectationSuite:
+def build_suite(schema: type[BaseModel], name: str) -> gx.ExpectationSuite:
     suite = gx.ExpectationSuite(name=name)
 
     # SCHEMA EXPECTATIONS

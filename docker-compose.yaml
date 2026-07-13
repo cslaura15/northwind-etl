@@ -352,6 +352,20 @@ services:
       interval: 5s
       retries: 5
 
+  db_init:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      postgres-dest:
+        condition: service_healthy
+    volumes:
+      - ./:/opt/airflow/northwind_etl
+    environment:
+      DATABASE_URL: ${POSTGRES_DEST_CONN}
+    working_dir: /opt/airflow/northwind_etl
+    command: python create_tables.py
+
 volumes:
   postgres-db-volume:
   postgres-dest-volume:
