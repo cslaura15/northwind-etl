@@ -1,18 +1,14 @@
 import json
 import logging
-import requests
 from datetime import datetime, timezone
 from pathlib import Path
-from pydantic import BaseModel
 
 import great_expectations as gx
 import pandas as pd
+import requests
+from pydantic import BaseModel
 
-from config import (
-    DATA_DIR,
-    LOGS_DIR,
-    OPENWEATHER_API_KEY,
-)
+from config import DATA_DIR, LOGS_DIR, OPENWEATHER_API_KEY
 
 logger = logging.getLogger(__name__)
 

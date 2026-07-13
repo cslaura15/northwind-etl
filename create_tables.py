@@ -1,15 +1,8 @@
 import os
+
 from pydantic import BaseModel
-from sqlalchemy import (
-    create_engine,
-    MetaData,
-    Table,
-    Column,
-    String,
-    Integer,
-    Float,
-    Boolean,
-)
+from sqlalchemy import (Boolean, Column, Float, Integer, MetaData, String,
+                        Table, create_engine)
 
 from dags.schemas.customers import EnrichedCustomersSchema
 from dags.schemas.orders import OrdersSchema

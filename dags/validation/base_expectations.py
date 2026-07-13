@@ -1,5 +1,6 @@
-import great_expectations as gx
 from datetime import datetime
+
+import great_expectations as gx
 from pydantic import BaseModel
 
 TYPE_MAPPING = {

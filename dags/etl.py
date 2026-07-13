@@ -1,35 +1,21 @@
 import logging
 import os
 import sqlite3
-import pandas as pd
-from pathlib import Path
-from sqlalchemy import create_engine, MetaData, Table
-from sqlalchemy.dialects.postgresql import insert
-from airflow.decorators import dag, task
 from datetime import datetime
+from pathlib import Path
 
-from extract import (
-    get_sqlite_table,
-    get_region_mapping,
-    get_weather_data,
-)
-from transform import (
-    enrich_customers,
-    run_first_validations,
-    run_second_validations,
-    clean_and_quarantine,
-)
-from utils import write_to_parquet, get_primary_keys
-from config import (
-    DATA_DIR,
-    DEST_DB_PATH,
-    SOURCE_DB_PATH,
-    REGION_MAPPING_TABLE_NAME,
-    CUSTOMERS_TABLE_NAME,
-    ORDERS_TABLE_NAME,
-    WEATHER_DATA_NAME,
-    TABLE_SCHEMA_MAPPING,
-)
+import pandas as pd
+from airflow.decorators import dag, task
+from extract import get_region_mapping, get_sqlite_table, get_weather_data
+from sqlalchemy import MetaData, Table, create_engine
+from sqlalchemy.dialects.postgresql import insert
+from transform import (clean_and_quarantine, enrich_customers,
+                       run_first_validations, run_second_validations)
+from utils import get_primary_keys, write_to_parquet
+
+from config import (CUSTOMERS_TABLE_NAME, DATA_DIR, DEST_DB_PATH,
+                    ORDERS_TABLE_NAME, REGION_MAPPING_TABLE_NAME,
+                    SOURCE_DB_PATH, TABLE_SCHEMA_MAPPING, WEATHER_DATA_NAME)
 
 logger = logging.getLogger(__name__)
 

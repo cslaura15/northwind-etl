@@ -1,14 +1,11 @@
 import logging
 import sqlite3
-import pandas as pd
 from pathlib import Path
 
-from config import (
-    DATA_DIR,
-    REGION_MAPPING_FILE_NAME,
-    TABLE_SCHEMA_MAPPING,
-)
-from utils import normalize_column_names, fetch_weather_data
+import pandas as pd
+from utils import fetch_weather_data, normalize_column_names
+
+from config import DATA_DIR, REGION_MAPPING_FILE_NAME, TABLE_SCHEMA_MAPPING
 
 logger = logging.getLogger(__name__)
 

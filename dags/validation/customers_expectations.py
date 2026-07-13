@@ -1,7 +1,7 @@
 import great_expectations as gx
-from .base_expectations import build_suite
+from schemas.customers import EnrichedCustomersSchema, RawCustomersSchema
 
-from schemas.customers import RawCustomersSchema, EnrichedCustomersSchema
+from .base_expectations import build_suite
 
 
 def build_first_customers_suite() -> gx.ExpectationSuite:

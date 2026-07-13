@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 
-from schemas.customers import RawCustomersSchema, EnrichedCustomersSchema
+from schemas.customers import EnrichedCustomersSchema, RawCustomersSchema
 from schemas.orders import OrdersSchema
 from schemas.region_mapping import RegionMappingSchema
 

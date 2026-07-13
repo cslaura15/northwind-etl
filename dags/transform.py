@@ -4,15 +4,14 @@ from collections import defaultdict
 import great_expectations as gx
 import pandas as pd
 from pydantic import BaseModel
+from utils import save_result, write_to_parquet
+from validation.customers_expectations import (build_enriched_customers_suite,
+                                               build_first_customers_suite)
+from validation.orders_expectations import build_first_orders_suite
+from validation.region_mapping_expectations import \
+    build_first_region_mapping_suite
 
 from config import TABLE_SCHEMA_MAPPING
-from validation.customers_expectations import (
-    build_first_customers_suite,
-    build_enriched_customers_suite,
-)
-from validation.orders_expectations import build_first_orders_suite
-from validation.region_mapping_expectations import build_first_region_mapping_suite
-from utils import save_result, write_to_parquet
 
 logger = logging.getLogger(__name__)
 
