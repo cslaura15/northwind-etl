@@ -10,9 +10,7 @@ TYPE_MAPPING = {
     datetime: "datetime64[ns]",
 }
 
-def build_suite(
-    schema, key_columns: list, primary_key_columns: list, name: str
-) -> gx.ExpectationSuite:
+def build_suite(schema, name: str) -> gx.ExpectationSuite:
     suite = gx.ExpectationSuite(name=name)
 
     # SCHEMA EXPECTATIONS
@@ -23,23 +21,31 @@ def build_suite(
     )
 
     # DATA TYPE EXPECTATIONS
+    num_primary_keys = 0
+    primary_key_columns = []
     for column, field_info in schema.model_fields.items():
+        extra = field_info.json_schema_extra or {}
+
         suite.add_expectation(
             gx.expectations.ExpectColumnValuesToBeOfType(column=column, type_=TYPE_MAPPING[field_info.annotation])
         )
 
-    # NULL VALUE EXPECTATIONS
-    for column in key_columns:
-        suite.add_expectation(
-            gx.expectations.ExpectColumnValuesToNotBeNull(column=column)
-        )
+        # NULL VALUE EXPECTATIONS
+        if not extra.get("nullable"):
+            suite.add_expectation(
+                gx.expectations.ExpectColumnValuesToNotBeNull(column=column)
+            )
+
+        if extra.get("primary_key"):
+            num_primary_keys += 1
+            primary_key_columns.append(column)
 
     # UNIQUENESS EXPECTATIONS
-    if len(primary_key_columns) == 1:
+    if num_primary_keys == 1:
         suite.add_expectation(
             gx.expectations.ExpectColumnValuesToBeUnique(column=primary_key_columns[0])
         )
-    else:
+    elif num_primary_keys > 1:
         suite.add_expectation(
             gx.expectations.ExpectCompoundColumnsToBeUnique(
                 column_list=primary_key_columns

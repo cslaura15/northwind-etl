@@ -1,18 +1,102 @@
-from pydantic import BaseModel    
+from pydantic import BaseModel, Field 
 
 
 class OrdersSchema(BaseModel):
-    OrderID: int
-    CustomerID: str
-    EmployeeID: int
-    OrderDate: str
-    RequiredDate: str
-    ShippedDate: str
-    ShipVia: int
-    Freight: float
-    ShipName: str
-    ShipAddress: str
-    ShipCity: str
-    ShipRegion: str
-    ShipPostalCode: str
-    ShipCountry: str
+    OrderID: int = Field(
+        json_schema_extra={
+            "primary_key": True,
+            "foreign_key": False,
+            "nullable": False
+        }
+    )
+    CustomerID: str = Field(
+        json_schema_extra={
+            "primary_key": False,
+            "foreign_key": True,
+            "nullable": False
+        }
+    )
+    EmployeeID: int = Field(
+        json_schema_extra={
+            "primary_key": False,
+            "foreign_key": True,
+            "nullable": False
+        }
+    )
+    OrderDate: str = Field(
+        json_schema_extra={
+            "primary_key": False,
+            "foreign_key": False,
+            "nullable": False
+        }
+    )
+    RequiredDate: str = Field(
+        json_schema_extra={
+            "primary_key": False,
+            "foreign_key": False,
+            "nullable": False
+        }
+    )
+    ShippedDate: str = Field(
+        json_schema_extra={
+            "primary_key": False,
+            "foreign_key": False,
+            "nullable": True
+        }
+    )
+    ShipVia: int = Field(
+        json_schema_extra={
+            "primary_key": False,
+            "foreign_key": False,
+            "nullable": False
+        }
+    )
+    Freight: float = Field(
+        json_schema_extra={
+            "primary_key": False,
+            "foreign_key": False,
+            "nullable": False
+        }
+    )
+    ShipName: str = Field(
+        json_schema_extra={
+            "primary_key": False,
+            "foreign_key": False,
+            "nullable": False
+        }
+    )
+    ShipAddress: str = Field(
+        json_schema_extra={
+            "primary_key": False,
+            "foreign_key": False,
+            "nullable": False
+        }
+    )
+    ShipCity: str = Field(
+        json_schema_extra={
+            "primary_key": False,
+            "foreign_key": False,
+            "nullable": False
+        }
+    )
+    ShipRegion: str = Field(
+        json_schema_extra={
+            "primary_key": False,
+            "foreign_key": False,
+            "nullable": False
+        }
+    )
+    ShipPostalCode: str = Field(
+        json_schema_extra={
+            "primary_key": False,
+            "foreign_key": False,
+            "nullable": False
+        }
+    )
+    ShipCountry: str = Field(
+        json_schema_extra={
+            "primary_key": False,
+            "foreign_key": False,
+            "nullable": False
+        }
+    )

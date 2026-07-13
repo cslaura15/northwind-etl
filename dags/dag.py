@@ -48,7 +48,9 @@ def northwind_etl():
 
         # Fetch weather data for specified cities
         cities = customers_df['City'].unique().tolist()
+        logger.info(f"cities: {cities}")
         weather_data_df = get_weather_data(cities=cities)
+        logger.info(weather_data_df.head())
         weather_data_path = write_to_parquet(df=weather_data_df, table_name='weather_data', run_id=run_id)
 
         return {
@@ -121,7 +123,7 @@ def northwind_etl():
             os.remove(parquet_file)
             logger.info("Removed temporary parquet file: %s", parquet_file)
 
-    extract() >> transform() >> load() >> cleanup()
+    extract() >> transform() >> load()# >> cleanup()
 
 
 northwind_etl()
