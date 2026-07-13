@@ -14,7 +14,7 @@ from utils import (
     get_weather_data,
     write_to_parquet,
 )
-from config import DATA_DIR, SOURCE_DB_PATH
+from config import DATA_DIR, DEST_DB_PATH, SOURCE_DB_PATH
 
 logger = logging.getLogger(__name__)
 
@@ -98,11 +98,11 @@ def northwind_etl():
         # Load the enriched customers, orders, and region mapping data into PostgreSQL
         engine = create_engine(DEST_DB_PATH)
         enriched_customers_df.to_sql(
-            "enriched_customers", engine, if_exists="replace", index=False
+            "enriched_customers", engine, if_exists="append", index=False
         )
-        orders_df.to_sql("orders", engine, if_exists="replace", index=False)
+        orders_df.to_sql("orders", engine, if_exists="append", index=False)
         region_mapping_df.to_sql(
-            "region_mapping", engine, if_exists="replace", index=False
+            "region_mapping", engine, if_exists="append", index=False
         )
 
     @task(trigger_rule="all_done")
