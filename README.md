@@ -7,7 +7,7 @@ Before setting up the environment, make sure you have the following installed an
 - **Docker Engine** (20.10+) and **Docker Compose v2** — everything in this project runs in containers, so no local Python installation is required
 - **Git**, to clone the repository
 - **At least 4 GB of RAM and 2 CPUs allocated to Docker**, and 10 GB of free disk space — the `airflow-init` container checks this on startup and will warn you if resources are too low
-- **Ports 8080 and 5432 (or your configured `POSTGRES_DST_PORT`) free** on your machine — used by the Airflow UI and the destination Postgres database
+- **Ports 8080, 5432 and 5433 free** on your machine — used by the Airflow UI and the destination Postgres database
 
 > On Windows, run everything through **WSL2** — the entrypoint scripts in this project are bash-based and won't work in PowerShell/CMD directly.
 
