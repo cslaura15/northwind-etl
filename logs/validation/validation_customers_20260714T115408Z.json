@@ -1,0 +1,580 @@
+{
+  "success": false,
+  "results": [
+    {
+      "success": true,
+      "expectation_config": {
+        "type": "expect_table_columns_to_match_set",
+        "kwargs": {
+          "batch_id": "pandas_source-customers_asset",
+          "column_set": [
+            "CustomerID",
+            "CompanyName",
+            "ContactName",
+            "ContactTitle",
+            "Address",
+            "City",
+            "Region",
+            "PostalCode",
+            "Country",
+            "Phone",
+            "Fax"
+          ]
+        },
+        "meta": {},
+        "id": "148073b2-7d5e-40c3-a9bd-ad0569a4fad8",
+        "severity": "critical"
+      },
+      "result": {
+        "observed_value": [
+          "Address",
+          "City",
+          "CompanyName",
+          "ContactName",
+          "ContactTitle",
+          "Country",
+          "CustomerID",
+          "Fax",
+          "Phone",
+          "PostalCode",
+          "Region"
+        ]
+      },
+      "meta": {},
+      "exception_info": {
+        "raised_exception": false,
+        "exception_traceback": null,
+        "exception_message": null
+      }
+    },
+    {
+      "success": true,
+      "expectation_config": {
+        "type": "expect_column_values_to_be_of_type",
+        "kwargs": {
+          "batch_id": "pandas_source-customers_asset",
+          "column": "CustomerID",
+          "type_": "object"
+        },
+        "meta": {},
+        "id": "294fc877-831d-4a68-aea2-85c7aeb4ab90",
+        "severity": "critical"
+      },
+      "result": {
+        "observed_value": "object_"
+      },
+      "meta": {},
+      "exception_info": {
+        "raised_exception": false,
+        "exception_traceback": null,
+        "exception_message": null
+      }
+    },
+    {
+      "success": true,
+      "expectation_config": {
+        "type": "expect_column_values_to_not_be_null",
+        "kwargs": {
+          "batch_id": "pandas_source-customers_asset",
+          "column": "CustomerID"
+        },
+        "meta": {},
+        "id": "269b6301-861e-4053-9066-39cbe17f46f8",
+        "severity": "critical"
+      },
+      "result": {
+        "element_count": 93,
+        "unexpected_count": 0,
+        "unexpected_percent": 0.0,
+        "partial_unexpected_list": [],
+        "partial_unexpected_counts": [],
+        "partial_unexpected_index_list": []
+      },
+      "meta": {},
+      "exception_info": {
+        "raised_exception": false,
+        "exception_traceback": null,
+        "exception_message": null
+      }
+    },
+    {
+      "success": true,
+      "expectation_config": {
+        "type": "expect_column_values_to_be_unique",
+        "kwargs": {
+          "batch_id": "pandas_source-customers_asset",
+          "column": "CustomerID"
+        },
+        "meta": {},
+        "id": "e9ffc076-0230-404b-9a65-5e5b382bba6b",
+        "severity": "critical"
+      },
+      "result": {
+        "element_count": 93,
+        "unexpected_count": 0,
+        "unexpected_percent": 0.0,
+        "partial_unexpected_list": [],
+        "missing_count": 0,
+        "missing_percent": 0.0,
+        "unexpected_percent_total": 0.0,
+        "unexpected_percent_nonmissing": 0.0,
+        "partial_unexpected_counts": [],
+        "partial_unexpected_index_list": []
+      },
+      "meta": {},
+      "exception_info": {
+        "raised_exception": false,
+        "exception_traceback": null,
+        "exception_message": null
+      }
+    },
+    {
+      "success": true,
+      "expectation_config": {
+        "type": "expect_column_values_to_be_of_type",
+        "kwargs": {
+          "batch_id": "pandas_source-customers_asset",
+          "column": "CompanyName",
+          "type_": "object"
+        },
+        "meta": {},
+        "id": "693447f9-7313-40a4-9f36-263e40b6af16",
+        "severity": "critical"
+      },
+      "result": {
+        "observed_value": "object_"
+      },
+      "meta": {},
+      "exception_info": {
+        "raised_exception": false,
+        "exception_traceback": null,
+        "exception_message": null
+      }
+    },
+    {
+      "success": true,
+      "expectation_config": {
+        "type": "expect_column_values_to_be_of_type",
+        "kwargs": {
+          "batch_id": "pandas_source-customers_asset",
+          "column": "ContactName",
+          "type_": "object"
+        },
+        "meta": {},
+        "id": "251161db-1e22-41e9-bfc4-524890d7af69",
+        "severity": "critical"
+      },
+      "result": {
+        "observed_value": "object_"
+      },
+      "meta": {},
+      "exception_info": {
+        "raised_exception": false,
+        "exception_traceback": null,
+        "exception_message": null
+      }
+    },
+    {
+      "success": true,
+      "expectation_config": {
+        "type": "expect_column_values_to_not_be_null",
+        "kwargs": {
+          "batch_id": "pandas_source-customers_asset",
+          "column": "ContactName"
+        },
+        "meta": {},
+        "id": "eb2c061f-1dec-46ad-8e8c-a0fe888993df",
+        "severity": "critical"
+      },
+      "result": {
+        "element_count": 93,
+        "unexpected_count": 0,
+        "unexpected_percent": 0.0,
+        "partial_unexpected_list": [],
+        "partial_unexpected_counts": [],
+        "partial_unexpected_index_list": []
+      },
+      "meta": {},
+      "exception_info": {
+        "raised_exception": false,
+        "exception_traceback": null,
+        "exception_message": null
+      }
+    },
+    {
+      "success": true,
+      "expectation_config": {
+        "type": "expect_column_values_to_be_of_type",
+        "kwargs": {
+          "batch_id": "pandas_source-customers_asset",
+          "column": "ContactTitle",
+          "type_": "object"
+        },
+        "meta": {},
+        "id": "5b9f7b93-e6a2-4240-bcf7-4ed61dc5f76a",
+        "severity": "critical"
+      },
+      "result": {
+        "observed_value": "object_"
+      },
+      "meta": {},
+      "exception_info": {
+        "raised_exception": false,
+        "exception_traceback": null,
+        "exception_message": null
+      }
+    },
+    {
+      "success": true,
+      "expectation_config": {
+        "type": "expect_column_values_to_be_of_type",
+        "kwargs": {
+          "batch_id": "pandas_source-customers_asset",
+          "column": "Address",
+          "type_": "object"
+        },
+        "meta": {},
+        "id": "3b9efd9d-a56b-444c-b88c-feef4898f12d",
+        "severity": "critical"
+      },
+      "result": {
+        "observed_value": "object_"
+      },
+      "meta": {},
+      "exception_info": {
+        "raised_exception": false,
+        "exception_traceback": null,
+        "exception_message": null
+      }
+    },
+    {
+      "success": false,
+      "expectation_config": {
+        "type": "expect_column_values_to_not_be_null",
+        "kwargs": {
+          "batch_id": "pandas_source-customers_asset",
+          "column": "Address"
+        },
+        "meta": {},
+        "id": "b306dd19-d5b5-45ab-ac17-c8d9402aea91",
+        "severity": "critical"
+      },
+      "result": {
+        "element_count": 93,
+        "unexpected_count": 2,
+        "unexpected_percent": 2.1505376344086025,
+        "partial_unexpected_list": [
+          null,
+          null
+        ],
+        "partial_unexpected_counts": [
+          {
+            "value": null,
+            "count": 2
+          }
+        ],
+        "partial_unexpected_index_list": [
+          83,
+          84
+        ]
+      },
+      "meta": {},
+      "exception_info": {
+        "raised_exception": false,
+        "exception_traceback": null,
+        "exception_message": null
+      }
+    },
+    {
+      "success": true,
+      "expectation_config": {
+        "type": "expect_column_values_to_be_of_type",
+        "kwargs": {
+          "batch_id": "pandas_source-customers_asset",
+          "column": "City",
+          "type_": "object"
+        },
+        "meta": {},
+        "id": "aceb0a41-5214-4b89-b890-db75e8eb6588",
+        "severity": "critical"
+      },
+      "result": {
+        "observed_value": "object_"
+      },
+      "meta": {},
+      "exception_info": {
+        "raised_exception": false,
+        "exception_traceback": null,
+        "exception_message": null
+      }
+    },
+    {
+      "success": false,
+      "expectation_config": {
+        "type": "expect_column_values_to_not_be_null",
+        "kwargs": {
+          "batch_id": "pandas_source-customers_asset",
+          "column": "City"
+        },
+        "meta": {},
+        "id": "dd74cd90-12e3-43ca-974b-53cb3a7020c2",
+        "severity": "critical"
+      },
+      "result": {
+        "element_count": 93,
+        "unexpected_count": 2,
+        "unexpected_percent": 2.1505376344086025,
+        "partial_unexpected_list": [
+          null,
+          null
+        ],
+        "partial_unexpected_counts": [
+          {
+            "value": null,
+            "count": 2
+          }
+        ],
+        "partial_unexpected_index_list": [
+          83,
+          84
+        ]
+      },
+      "meta": {},
+      "exception_info": {
+        "raised_exception": false,
+        "exception_traceback": null,
+        "exception_message": null
+      }
+    },
+    {
+      "success": true,
+      "expectation_config": {
+        "type": "expect_column_values_to_be_of_type",
+        "kwargs": {
+          "batch_id": "pandas_source-customers_asset",
+          "column": "Region",
+          "type_": "object"
+        },
+        "meta": {},
+        "id": "19727777-e563-4e42-a43c-98f5b44b7d87",
+        "severity": "critical"
+      },
+      "result": {
+        "observed_value": "object_"
+      },
+      "meta": {},
+      "exception_info": {
+        "raised_exception": false,
+        "exception_traceback": null,
+        "exception_message": null
+      }
+    },
+    {
+      "success": true,
+      "expectation_config": {
+        "type": "expect_column_values_to_be_of_type",
+        "kwargs": {
+          "batch_id": "pandas_source-customers_asset",
+          "column": "PostalCode",
+          "type_": "object"
+        },
+        "meta": {},
+        "id": "db93c00d-829d-47d0-864f-a47318b780c2",
+        "severity": "critical"
+      },
+      "result": {
+        "observed_value": "object_"
+      },
+      "meta": {},
+      "exception_info": {
+        "raised_exception": false,
+        "exception_traceback": null,
+        "exception_message": null
+      }
+    },
+    {
+      "success": false,
+      "expectation_config": {
+        "type": "expect_column_values_to_not_be_null",
+        "kwargs": {
+          "batch_id": "pandas_source-customers_asset",
+          "column": "PostalCode"
+        },
+        "meta": {},
+        "id": "16a694e5-8f49-405d-86c7-91cd5faab433",
+        "severity": "critical"
+      },
+      "result": {
+        "element_count": 93,
+        "unexpected_count": 3,
+        "unexpected_percent": 3.225806451612903,
+        "partial_unexpected_list": [
+          null,
+          null,
+          null
+        ],
+        "partial_unexpected_counts": [
+          {
+            "value": null,
+            "count": 3
+          }
+        ],
+        "partial_unexpected_index_list": [
+          36,
+          83,
+          84
+        ]
+      },
+      "meta": {},
+      "exception_info": {
+        "raised_exception": false,
+        "exception_traceback": null,
+        "exception_message": null
+      }
+    },
+    {
+      "success": true,
+      "expectation_config": {
+        "type": "expect_column_values_to_be_of_type",
+        "kwargs": {
+          "batch_id": "pandas_source-customers_asset",
+          "column": "Country",
+          "type_": "object"
+        },
+        "meta": {},
+        "id": "c1edaa5e-8692-4283-9b0d-405b18162381",
+        "severity": "critical"
+      },
+      "result": {
+        "observed_value": "object_"
+      },
+      "meta": {},
+      "exception_info": {
+        "raised_exception": false,
+        "exception_traceback": null,
+        "exception_message": null
+      }
+    },
+    {
+      "success": false,
+      "expectation_config": {
+        "type": "expect_column_values_to_not_be_null",
+        "kwargs": {
+          "batch_id": "pandas_source-customers_asset",
+          "column": "Country"
+        },
+        "meta": {},
+        "id": "589e5471-e027-409e-91a7-a346afad7764",
+        "severity": "critical"
+      },
+      "result": {
+        "element_count": 93,
+        "unexpected_count": 2,
+        "unexpected_percent": 2.1505376344086025,
+        "partial_unexpected_list": [
+          null,
+          null
+        ],
+        "partial_unexpected_counts": [
+          {
+            "value": null,
+            "count": 2
+          }
+        ],
+        "partial_unexpected_index_list": [
+          83,
+          84
+        ]
+      },
+      "meta": {},
+      "exception_info": {
+        "raised_exception": false,
+        "exception_traceback": null,
+        "exception_message": null
+      }
+    },
+    {
+      "success": true,
+      "expectation_config": {
+        "type": "expect_column_values_to_be_of_type",
+        "kwargs": {
+          "batch_id": "pandas_source-customers_asset",
+          "column": "Phone",
+          "type_": "object"
+        },
+        "meta": {},
+        "id": "7c63e5bd-9753-4c69-a4e5-c416c7c992e6",
+        "severity": "critical"
+      },
+      "result": {
+        "observed_value": "object_"
+      },
+      "meta": {},
+      "exception_info": {
+        "raised_exception": false,
+        "exception_traceback": null,
+        "exception_message": null
+      }
+    },
+    {
+      "success": true,
+      "expectation_config": {
+        "type": "expect_column_values_to_be_of_type",
+        "kwargs": {
+          "batch_id": "pandas_source-customers_asset",
+          "column": "Fax",
+          "type_": "object"
+        },
+        "meta": {},
+        "id": "d25b1708-1543-4ff6-8299-4515b9c5c201",
+        "severity": "critical"
+      },
+      "result": {
+        "observed_value": "object_"
+      },
+      "meta": {},
+      "exception_info": {
+        "raised_exception": false,
+        "exception_traceback": null,
+        "exception_message": null
+      }
+    }
+  ],
+  "suite_name": "first_customers_suite",
+  "suite_parameters": {},
+  "statistics": {
+    "evaluated_expectations": 19,
+    "successful_expectations": 15,
+    "unsuccessful_expectations": 4,
+    "success_percent": 78.94736842105263
+  },
+  "meta": {
+    "great_expectations_version": "1.19.0",
+    "batch_spec": {
+      "batch_data": "PandasDataFrame"
+    },
+    "batch_markers": {
+      "ge_load_time": "20260714T115407.980044Z",
+      "pandas_data_fingerprint": "e13cdf80a191aca010f1eec2b041e675"
+    },
+    "active_batch_definition": {
+      "datasource_name": "pandas_source",
+      "data_connector_name": "fluent",
+      "data_asset_name": "customers_asset",
+      "batch_identifiers": {
+        "dataframe": "<DATAFRAME>"
+      }
+    },
+    "validation_id": "db52bfd9-a883-4208-a1f3-d0c335494b40",
+    "checkpoint_id": null,
+    "run_id": {
+      "run_name": null,
+      "run_time": "2026-07-14T11:54:08.062471+00:00"
+    },
+    "validation_time": "2026-07-14T11:54:08.062471+00:00",
+    "batch_parameters": {
+      "dataframe": "<DATAFRAME>"
+    }
+  },
+  "id": null
+}

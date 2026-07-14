@@ -10,14 +10,11 @@ This project uses a `.env` file for configuration (Airflow settings, Postgres cr
 ```bash
    cp env-template .env
 ```
-2. Fill in the values (Fernet key, Postgres user/password, etc.). Generate a Fernet key with:
+2. On Linux, set `AIRFLOW_UID` to your host user ID to avoid file permission issues. To get your host user ID, run:
 ```bash
-   python3 -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
+   id -u
 ```
-3. On Linux, set `AIRFLOW_UID` to your host user ID to avoid file permission issues:
-```bash
-   echo "AIRFLOW_UID=$(id -u)" >> .env
-```
+3. Set the OpenWeatherMap API key. To obtain one, go to [openweather.org](https://openweathermap.org/) and click on 'Get API Key'.
 
 ### Setting Up the Containers
 
@@ -25,17 +22,12 @@ This project uses a `.env` file for configuration (Airflow settings, Postgres cr
 # Build custom Airflow image (installs extra Python packages)
 docker compose build
 
-# Initialize Airflow (creates metadata DB, admin user, sets permissions)
-docker compose up airflow-init
-
 # Start all services in the background
 docker compose up -d
 ```
-
-Check that everything is running:
-
+One-liner:
 ```bash
-docker compose ps
+docker compose build && docker compose up -d
 ```
 
 ### Accessing the Airflow UI
