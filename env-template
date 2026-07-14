@@ -4,18 +4,15 @@ AIRFLOW_PROJ_DIR=.
 _AIRFLOW_WWW_USER_USERNAME=airflow
 _AIRFLOW_WWW_USER_PASSWORD=airflow
 
-# Generate with: python3 -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
-FERNET_KEY=
-
 # Target Postgres
 POSTGRES_DST_USER=admin
 POSTGRES_DST_PASSWORD=admin
 POSTGRES_DST_DB=target_db
-POSTGRES_DST_PORT=5433s
+POSTGRES_DST_PORT=5433
 
 # Specific paths/config used inside the DAG
 SQLITE_SRC_PATH=/opt/airflow/data/northwind.db
-POSTGRES_DEST_CONN=postgresql+psycopg2://admin:admin@postgres-dest:5432/target_db
+POSTGRES_DEST_CONN=postgresql+psycopg2://admin:admin@postgres-dest:5433/target_db
 
 # API keys
 OPENWEATHER_API_KEY=
