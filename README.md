@@ -1,5 +1,10 @@
 # Data-Engineering-Expert-Practical-Case-Study
 
+## Disclaimer
+
+I used GenAI (the free version of Claude) to generate some functions of the code (and in the README). I reviewed all the generated code in this project and used it carefully. The architecture and project structure was my idea. I wrote this section all by myself.
+
+
 ## Prerequisites
 
 Before setting up the environment, make sure you have the following installed and running:

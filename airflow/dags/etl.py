@@ -158,7 +158,7 @@ def northwind_etl():
         for table_name, path in data_paths.items():
             logger.info(f"Loading table {table_name} ...")
             df = pd.read_parquet(path)
-            df.to_sql(name=table_name, con=engine, index=False)
+            df.to_sql(name=table_name, if_exists="replace", con=engine, index=False)
             logger.info("Loading successful")
 
     @task(trigger_rule="all_done")
