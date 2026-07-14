@@ -1,6 +1,4 @@
 .env
 .venv
-logs
-data
 config
 __pycache__/

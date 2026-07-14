@@ -4,9 +4,9 @@ from pydantic import BaseModel
 from sqlalchemy import (Boolean, Column, Float, Integer, MetaData, String,
                         Table, create_engine)
 
-from dags.schemas.customers import EnrichedCustomersSchema
-from dags.schemas.orders import OrdersSchema
-from dags.schemas.region_mapping import RegionMappingSchema
+from etl.schemas.customers import EnrichedCustomersSchema
+from etl.schemas.orders import OrdersSchema
+from etl.schemas.region_mapping import RegionMappingSchema
 
 PYDANTIC_TO_SQLALCHEMY = {
     str: String,
